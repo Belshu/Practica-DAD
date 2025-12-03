@@ -34,16 +34,16 @@ public class CommunicationSocket implements ICommunicationServer{
 	}
 
 	@Override
-	public boolean isAlive() {
-		return status;
-	}
-
-	@Override
 	public String sendCommand(String command) throws IOException {
-		pw.println(command);
+		pw.println(communicationId + " " + command);
 		pw.flush();
 		communicationId++;
-		return null;
+		return br.readLine();
+	}
+	
+	@Override
+	public boolean isAlive() {
+		return status;
 	}
 	
 	public String receiveCommand() {
