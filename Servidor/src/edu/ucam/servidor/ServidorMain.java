@@ -1,5 +1,10 @@
 package edu.ucam.servidor;
 
-public class ServidorMain {
+import java.io.IOException;
 
+public class ServidorMain {
+	public static void main(String[] args) throws IOException{
+		MainChannel channel = new MainChannel();
+		channel.abrirCanalComandos();
+	}
 }

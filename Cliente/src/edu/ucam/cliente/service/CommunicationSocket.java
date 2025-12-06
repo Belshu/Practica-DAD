@@ -11,43 +11,45 @@ import edu.ucam.cliente.interfaces.ICommunicationServer;
 import edu.ucam.cliente.config.*;
 
 public class CommunicationSocket implements ICommunicationServer{
-	private Socket mySocket;
-	private int communicationId = 1;
+	private Socket socket;
+	private int idComunicacion = 1;
 	private BufferedReader br;
 	private PrintWriter pw;
-	private boolean status;
+	private boolean estado;
 
 	@Override
-	public void connect() throws IOException {
-		mySocket = new Socket(ClientConfig.ip, ClientConfig.communicationPort);
-		br = new BufferedReader(new InputStreamReader(mySocket.getInputStream()));
-		pw = new PrintWriter(new OutputStreamWriter(mySocket.getOutputStream()));
-		status = true;
+	public void connectar() throws IOException {
+		socket = new Socket(ClientConfig.ip, ClientConfig.puerto);
+		br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+		
+		System.out.println(recibirComando());
+		
+		estado = true;
 	}
-
+	
 	@Override
-	public void disconnect() throws IOException {
-		if(mySocket.isConnected()) {
-			mySocket.close();
-			status = false;
+	public void desconectar() throws IOException {
+		if(socket.isConnected()) {
+			socket.close();
+			estado = false;
 		}
 	}
-
+	
 	@Override
-	public String sendCommand(String command) throws IOException {
-		pw.println(communicationId + " " + command);
+	public String enviarComando(String comando) throws IOException {
+		pw.println(idComunicacion + " " + comando);
 		pw.flush();
-		communicationId++;
+		idComunicacion++;
 		return br.readLine();
 	}
 	
 	@Override
-	public boolean isAlive() {
-		return status;
+	public boolean isVivo() {
+		return estado;
 	}
 	
-	public String receiveCommand() {
-		return null;
+	public String recibirComando() throws IOException {
+		return br.readLine();
 	}
-
 }

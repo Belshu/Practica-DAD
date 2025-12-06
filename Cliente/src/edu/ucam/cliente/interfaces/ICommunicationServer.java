@@ -3,9 +3,9 @@ package edu.ucam.cliente.interfaces;
 import java.io.IOException;
 
 public interface ICommunicationServer {
-	public void connect() throws IOException;
-	public void disconnect() throws IOException;
-	public boolean isAlive();
-	public String sendCommand(String command) throws IOException;
+	public void connectar() throws IOException;
+	public void desconectar() throws IOException;
+	public boolean isVivo();
+	public String enviarComando(String comando) throws IOException;
 	
 }

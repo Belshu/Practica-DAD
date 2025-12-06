@@ -5,15 +5,14 @@ import java.io.IOException;
 import edu.ucam.cliente.interfaces.IChannelData;
 
 public class ChannelData implements IChannelData{
-
 	@Override
-	public void sendObject(String ip, String port, Object model) throws IOException {
+	public void enviarObjeto(String ip, String puerto, Object modelo) throws IOException {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public Object receiveObject(String ip, String port) throws IOException {
+	public Object recibirObjeto(String ip, String puerto) throws IOException {
 		// TODO Auto-generated method stub
 		return null;
 	}

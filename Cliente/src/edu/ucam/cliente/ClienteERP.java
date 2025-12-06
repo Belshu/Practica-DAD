@@ -2,46 +2,51 @@ package edu.ucam.cliente;
 
 import java.io.IOException;
 
-import edu.ucam.cliente.interfaces.IAutentication;
+import edu.ucam.cliente.interfaces.IAuthentication;
 import edu.ucam.cliente.interfaces.IChannelData;
 import edu.ucam.cliente.interfaces.ICommunicationServer;
 import edu.ucam.cliente.interfaces.IRepository;
 
-import edu.ucam.cliente.service.AutenticationService;
+import edu.ucam.cliente.service.AuthenticationService;
 import edu.ucam.cliente.service.ChannelData;
 import edu.ucam.cliente.service.CommunicationSocket;
 import edu.ucam.cliente.service.SubjectRepository;
 import edu.ucam.cliente.service.TituRepository;
 
 import edu.ucam.domain.Asignatura;
+import edu.ucam.domain.Matricula;
 import edu.ucam.domain.Titulacion;
 
 public class ClienteERP {
-	private final ICommunicationServer communication;
-	private final IAutentication autentication;
-	private final IRepository<Asignatura> subjectRepository;
-	private final IRepository<Titulacion> tituRepository;
+	private final ICommunicationServer comunicacion;
+	private final IAuthentication autenticacion;
+	private final IRepository<Asignatura> repositorioAsignaturas;
+	private final IRepository<Titulacion> repositorioTitulaciones;
+	// private final IRepository<Matricula> repositorioMatriculas;
+	// private final IRepository<Alumno> repositorioAlumnos;
 	
 	public ClienteERP() throws IOException{
-		this.communication = new CommunicationSocket();
-		this.communication.connect();
-		
+		this.comunicacion = new CommunicationSocket();
+		this.comunicacion.connectar();
+	
 		IChannelData channelData = new ChannelData();
-		this.autentication = new AutenticationService(this.communication);
-		this.subjectRepository = new SubjectRepository(communication, channelData);
-		this.tituRepository = new TituRepository(communication, channelData);
+		this.autenticacion = new AuthenticationService(this.comunicacion);
+		this.repositorioAsignaturas = new SubjectRepository(comunicacion, channelData);
+		this.repositorioTitulaciones = new TituRepository(comunicacion, channelData);
+		// this.repositorioMatriculas = new MatRepository(communication, channelData);
+		// this.repositorioMatriculas = new AluRepository(communication, channelData);
 	}
 	
 	public boolean autenticar(String usuario, String password) throws IOException {
-		return autentication.autenticar(usuario, password);
+		return autenticacion.autenticar(usuario, password);
 	}
 	
 	public void cerrarSesion() throws IOException {
-		autentication.closeSession();
+		autenticacion.cerrarSesion();
 	}
 	
 	public boolean insertarAsignatura(Asignatura asig) throws ClassNotFoundException, IOException {
-		subjectRepository.add(asig);
+		repositorioAsignaturas.add(asig);
 		return false;
 	}
 }

@@ -8,23 +8,23 @@ import edu.ucam.cliente.interfaces.*;
 public class BaseRepository <T> implements IRepository<T> {
 	protected final ICommunicationServer communication;
 	protected final IChannelData channelData;
-	protected final String insertCommand, deleteCommand, getCommand, listCommand, countCommand, updateCommand;
+	protected final String addComando, removeComando, getComando, listComando, countComando, updateComando;
 
-	public BaseRepository(ICommunicationServer communication, IChannelData channelData, String insertCommand,
-			String deleteCommand, String getCommand, String listCommand, String countCommand, String updateCommand) {
+	public BaseRepository(ICommunicationServer communication, IChannelData channelData, String addComando,
+			String removeComando, String getComando, String listComando, String countComando, String updateComando) {
 		super();
 		this.communication = communication;
 		this.channelData = channelData;
-		this.insertCommand = insertCommand;
-		this.deleteCommand = deleteCommand;
-		this.getCommand = getCommand;
-		this.listCommand = listCommand;
-		this.countCommand = countCommand;
-		this.updateCommand = updateCommand;
+		this.addComando = addComando;
+		this.removeComando = removeComando;
+		this.getComando = getComando;
+		this.listComando = listComando;
+		this.countComando = countComando;
+		this.updateComando = updateComando;
 	}
 
 	@Override
-	public void add(T model) throws IOException, ClassNotFoundException {
+	public void add(T modelo) throws IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		
 	}
@@ -42,7 +42,7 @@ public class BaseRepository <T> implements IRepository<T> {
 	}
 
 	@Override
-	public void update(String id, T model) throws IOException, ClassNotFoundException {
+	public void update(String id, T modelo) throws IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		
 	}
@@ -50,11 +50,11 @@ public class BaseRepository <T> implements IRepository<T> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public T getModel(String id) throws IOException, ClassNotFoundException {
-		String response = communication.sendCommand(getCommand);
-		ResponseParser parser = new ResponseParser(response);
+		String respuesta = communication.enviarComando(getComando);
+		ResponseParser parser = new ResponseParser(respuesta);
 		
 		if(parser.isPREOK()) {
-			T responseModel = (T) channelData.receiveObject(parser.getIp(), parser.getPort());
+			T responseModel = (T) channelData.recibirObjeto(parser.getIp(), parser.getPort());
 			return responseModel;
 		} 
 		return null;
