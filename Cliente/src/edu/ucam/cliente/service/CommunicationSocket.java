@@ -55,7 +55,10 @@ public class CommunicationSocket implements ICommunicationServer{
 			System.out.println("\nComando enviado al servidor: " + idComunicacion + " " + comando);
 			idComunicacion++;
 			String respuesta = br.readLine();
-			System.out.println("Respuesta del servidor: " + respuesta);
+			
+			if(respuesta != null) System.out.println("Respuesta del servidor: " + respuesta + "\n");
+			else System.out.println("Ninguna respuesta por parte del servidor.\n");
+			
 			return respuesta;
 			
 		} catch(IOException ex) {

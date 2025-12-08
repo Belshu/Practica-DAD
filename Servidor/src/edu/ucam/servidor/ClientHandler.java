@@ -42,21 +42,61 @@ public class ClientHandler extends Thread{
 			String mensaje = null; 
 			
 			
+			// AUTENTICAR NOMBRE DE USUARIO
+			mensaje = br.readLine();
+			System.out.println("\nNombre del cliente: " + mensaje);
+			autenticarCliente(mensaje);
+			
+			
+			// AUTENTICAR CONTRASEÑA DE USUARIO
+			mensaje = br.readLine();
+			System.out.println("\nContraseña del cliente: " + mensaje);
+			autenticarCliente(mensaje);
+			
+			
+			// COMANDOS DEL CLIENTE
 			while((mensaje = br.readLine()) != null) {
 				System.out.println("\nMensaje del cliente: " + mensaje);
-				procesarCliente(mensaje);
+				gestionarComandos(mensaje);
 			}
 			
 		} catch(IOException ex) {
-			System.out.println("Conexion cerrada con el cliente: " + ex.getMessage());
+			System.out.println("Conexion cerrada con el cliente " + socketCliente.getInetAddress().getHostAddress() 
+					+ " : " + socketCliente.getPort() + " (" + ex.getMessage() + ")");
 		} finally {
 			cerrarConexion();
 		}
 	}
 	
 	
-	// COMANDOS
-	private void procesarCliente(String comandoCompleto) {
+	// GESTIONAR COMANDOS ADD, GET, LIST....
+	private void gestionarComandos(String comandoCompleto) {
+		String [] partes = comandoCompleto.split(" ");
+		
+		if(partes.length < 2) {
+			System.out.println("RESPUESTA: FAILED 0 400 comando_no_valido");
+			pw.println("FAILED 0 400 comando_no_valido");
+			return;
+		}
+		
+		String idComando = partes[0], comando = partes[1];
+		
+		switch(comando.toUpperCase())  {
+			case "EXIT":
+				pw.println("OK " + idComando + " 200 CERRANDO CONEXIÓN...");
+				cerrarConexion();
+				break;
+		
+			default:
+				pw.println("FAILED " + idComando + " 400 COMANDO_NO_EXISTENTE");
+		}
+		
+		pw.flush();
+	}
+	
+	
+	// AUTENTICACION INICIAL
+	private void autenticarCliente(String comandoCompleto) {
 		String [] partes = comandoCompleto.split(" ");
 		
 		if(partes.length < 2) {
@@ -109,8 +149,8 @@ public class ClientHandler extends Thread{
 							pw.println("FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
 						}
 					} else {
-						System.out.println("RESPUESTA: FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
-						pw.println("FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
+						System.out.println("RESPUESTA: FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
+						pw.println("FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
 					}
 				}
 			break;

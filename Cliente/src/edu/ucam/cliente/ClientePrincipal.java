@@ -15,7 +15,18 @@ public class ClientePrincipal {
 		ClienteERP cliente = new ClienteERP();
 
 		if(cliente.autenticar(usuario, contrasena)) {
-			System.out.println("CONTRASEÑA CORRECTA!");
+			System.out.println("\nADMINISTRADOR AUTENTICADO\n");
+			
+			System.out.print("(Escribe los comandos a continuacion)> ");
+			String mensaje = S.nextLine();
+			
+			while(mensaje != null && !mensaje.equalsIgnoreCase("EXIT")) {
+				cliente.getComunicacion().enviarComando(mensaje);
+				System.out.print("> ");
+				mensaje = S.nextLine();
+			}
+			
+			cliente.cerrarSesion();
 		} else {
 			System.out.println("Autenticación incorrecta");
 		}

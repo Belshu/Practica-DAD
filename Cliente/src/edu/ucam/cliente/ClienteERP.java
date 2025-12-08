@@ -49,4 +49,8 @@ public class ClienteERP {
 		repositorioAsignaturas.add(asig);
 		return false;
 	}
+	
+	public ICommunicationServer getComunicacion() {
+		return comunicacion;
+	}
 }

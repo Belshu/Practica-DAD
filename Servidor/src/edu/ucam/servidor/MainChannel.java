@@ -22,7 +22,6 @@ public class MainChannel {
 		}
 	}
 	
-	
 	// METODO PRINCIPAL: abrir el serversocket, el socket y el hilo (y lanzarlo)
 	public void abrirCanalComandos() {
 		try {
