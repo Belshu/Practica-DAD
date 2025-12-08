@@ -12,12 +12,10 @@ public class ClientePrincipal {
 		System.out.print("Nombre: "); usuario = S.nextLine();
 		System.out.print("Contraseña: "); contrasena = S.nextLine();
 		
-		// System.out.println("Nombre: " + usuario + " | contraseña: " + contrasena);
-		
 		ClienteERP cliente = new ClienteERP();
-		
+
 		if(cliente.autenticar(usuario, contrasena)) {
-			System.out.println("HOLAA");
+			System.out.println("CONTRASEÑA CORRECTA!");
 		} else {
 			System.out.println("Autenticación incorrecta");
 		}

@@ -10,23 +10,36 @@ public class AuthenticationService implements IAuthentication{
 
 	public AuthenticationService(ICommunicationServer communication) {
 		this.communication = communication;
-	}
+	} 
 
 	@Override
-	public boolean autenticar(String usuario, String contrasena) throws IOException {
-		String respuestaServidor = communication.enviarComando("USER " + usuario);
-		
-		System.out.println(respuestaServidor);
-		if(respuestaServidor.startsWith("OK")) {
-			respuestaServidor = communication.enviarComando("PASS " + contrasena);
-			return respuestaServidor.startsWith("OK");
+	public boolean autenticar(String usuario, String contrasena){
+		try {
+			String respuestaServidor = communication.enviarComando("USER " + usuario); 
+			// System.out.println("Respuesta del servidor: " + respuestaServidor);
+			
+			if(respuestaServidor != null) {
+				if(respuestaServidor.startsWith("OK")) {
+					respuestaServidor = communication.enviarComando("PASS " + contrasena);
+					
+					if(respuestaServidor != null) return respuestaServidor.startsWith("OK");
+					else return false;
+				}
+			}
+		} catch(IOException ex) {
+			System.out.println(ex.getMessage());
 		}
+		
 		return false;
 	}
 
 	@Override
-	public void cerrarSesion() throws IOException {
-		communication.enviarComando("EXIT");
-		communication.desconectar();
+	public void cerrarSesion(){
+		try {
+			communication.enviarComando("EXIT");
+			communication.desconectar();
+		} catch(IOException ex) {
+			System.out.println(ex.getMessage());
+		}
 	}
 }

@@ -6,5 +6,5 @@ public class ServerConfig {
 	 */
 	public static int puertoComandos = 5000;
 	public static int puertoObjetos = 50001;
-	public static final String nombre = "admin", contrasena = "admin";
+	public static final String nombre = "admin", contrasena = "admin"; 
 }

@@ -16,37 +16,51 @@ public class ClientHandler extends Thread{
 	
 	private boolean nombreCorrecto = false, contrasenaCorrecta = false;
 	
+	
+	// CONSTRUCTOR: tener referencia del socket creado
 	public ClientHandler(Socket socketCliente) {
 		this.socketCliente = socketCliente;
-	}
-	
-	@Override
-	public void run() {
+		
 		try {
 			br = new BufferedReader(new InputStreamReader(socketCliente.getInputStream()));
 			pw = new PrintWriter(new OutputStreamWriter(socketCliente.getOutputStream()));
-			
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
+		
+	}
+	
+	
+	// Inicializar el BufferedReader/PrintWriter, lanzar el mensaje de bienvenida 
+	// y leer todos los mensajes recibidos por el cliente
+	@Override
+	public void run() {
+		try {
 			pw.println("OK 0 200 Bienvenido!");
 			pw.flush();
-
-			String mensaje = null;
 			
-			while((mensaje = br.readLine()) != null && (mensaje = br.readLine()).equalsIgnoreCase("EXIT")) {
-				System.out.println("Mensaje del cliente: " + mensaje);
-				// procesarCliente(mensaje);
+			String mensaje = null; 
+			
+			
+			while((mensaje = br.readLine()) != null) {
+				System.out.println("\nMensaje del cliente: " + mensaje);
+				procesarCliente(mensaje);
 			}
 			
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("Conexion cerrada con el cliente: " + ex.getMessage());
 		} finally {
 			cerrarConexion();
 		}
 	}
 	
+	
+	// COMANDOS
 	private void procesarCliente(String comandoCompleto) {
 		String [] partes = comandoCompleto.split(" ");
 		
 		if(partes.length < 2) {
+			System.out.println("RESPUESTA: FAILED 0 400 comando_no_valido");
 			pw.println("FAILED 0 400 comando_no_valido");
 			return;
 		}
@@ -54,35 +68,49 @@ public class ClientHandler extends Thread{
 		String idComando = partes[0], comando = partes[1];
 		
 		switch(comando.toUpperCase()) {
+		
+			// AUTENTICAR NOMBRE DE USUARIO
 			case "USER":
-				if(partes.length > 3) {
+				if(partes.length != 3) {
+					System.out.println("RESPUESTA: FAILED " + idComando + " 400 FALTA_NOMBRE");
 					pw.println("FAILED " + idComando + " 400 FALTA_NOMBRE");
 				} else {
 					String nombre = partes[2];
 					
 					if(ServerConfig.nombre.equals(nombre)) {
 						nombreCorrecto = true;
+						System.out.println("RESPUESTA: OK " + idComando + " 200 NOMBRE_OK");
 						pw.println("OK " + idComando + " 200 NOMBRE_OK");
 					} else {
 						nombreCorrecto = false;
+						System.out.println("RESPUESTA: FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
 						pw.println("FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
 					}
 				}
 			break;
 			
+			// AUTENTICAR CONTRASEÑA
 			case "PASS":
-				if(partes.length > 3) {
+				if(partes.length != 3) {
+					System.out.println("RESPUESTA: FAILED " + idComando + " 402 FALTA_CONTRASEÑA");
 					pw.println("FAILED " + idComando + " 402 FALTA_CONTRASEÑA");
 				} else {
 					String contrasena = partes[2];
 					if(nombreCorrecto) {
 						if(ServerConfig.contrasena.equals(contrasena)) {
 							contrasenaCorrecta = true;
+							
+							System.out.println("RESPUESTA: OK " + idComando + " 200 CONTRASEÑA_OK");
 							pw.println("OK " + idComando + " 200 CONTRASEÑA_OK");
 						} else {
 							contrasenaCorrecta = false;
+							
+							System.out.println("RESPUESTA: FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
 							pw.println("FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
 						}
+					} else {
+						System.out.println("RESPUESTA: FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
+						pw.println("FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
 					}
 				}
 			break;
@@ -90,8 +118,12 @@ public class ClientHandler extends Thread{
 			default:
 				pw.println("FAILED " + idComando + " 400 COMANDO_NO_EXISTENTE");
 		}
+		
+		pw.flush();
 	}
 	
+	
+	// CERRAR SOCKET
 	private void cerrarConexion() {
 		try {
 			if(socketCliente.isConnected()) socketCliente.close();
