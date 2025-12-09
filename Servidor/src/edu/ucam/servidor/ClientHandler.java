@@ -41,8 +41,8 @@ public class ClientHandler extends Thread{
 	}
 	
 	
-	// Inicializar el BufferedReader/PrintWriter, lanzar el mensaje de bienvenida 
-	// y leer todos los mensajes recibidos por el cliente
+	// Inicializar el BufferedReader/PrintWriter, lanzar el mensaje de bienvenida y leer
+	// todos los mensajes recibidos por el cliente
 	@Override
 	public void run() {
 		try {
@@ -51,20 +51,19 @@ public class ClientHandler extends Thread{
 			
 			String mensaje = null;
 			
-			
-			// AUTENTICAR NOMBRE DE USUARIO
+			//  ----------------------------------------------------------- AUTENTICAR NOMBRE DE USUARIO
 			mensaje = br.readLine();
 			System.out.println("\nNombre del cliente: " + mensaje);
-			autenticarCliente(mensaje);
+			gestionarComandos(mensaje);
 			
 			
-			// AUTENTICAR CONTRASEÑA DE USUARIO
+			//  ----------------------------------------------------------- AUTENTICAR CONTRASEÑA DE USUARIO
 			mensaje = br.readLine();
 			System.out.println("\nContraseña del cliente: " + mensaje);
-			autenticarCliente(mensaje);
+			gestionarComandos(mensaje);
 			
 			
-			// COMANDOS DEL CLIENTE
+			//  ----------------------------------------------------------- COMANDOS DEL CLIENTE
 			while((mensaje = br.readLine()) != null) {
 				System.out.println("\nMensaje del cliente: " + mensaje);
 				gestionarComandos(mensaje);
@@ -79,7 +78,7 @@ public class ClientHandler extends Thread{
 	}
 	
 	
-	// GESTIONAR COMANDOS ADD, GET, LIST....
+	//  ----------------------------------------------------------- GESTIONAR COMANDOS
 	private void gestionarComandos(String comandoCompleto) {
 		String [] partes = comandoCompleto.split(" ");
 		
@@ -90,131 +89,121 @@ public class ClientHandler extends Thread{
 			return;
 		}
 		
-		String idComando = partes[0], comando = partes[1];
+		String idComando = partes[0], comando = partes[1].toUpperCase();
 		
-		switch(comando.toUpperCase())  {
-		
-		
-		// [idComando] COUNT = OK [idComando] [cod_respuesta] [tamaño de la lista]
-			case "COUNTTIT":
-				int totalTit = data.getTitulacionRepository().count();
-				System.out.println("RESPUESTA: OK " + idComando + " 200 " + totalTit);
-				pw.println("OK " + idComando + " 200 " + totalTit);
-			break;
+		if(comando.startsWith("COUNT")) gestionarCount(idComando, comando);
+		else {
+			switch(comando) {
 			
-			case "COUNTASIG":
-				int totalAsig = data.getAsigRepository().count();
-				System.out.println("RESPUESTA: OK " + idComando + " 200 " + totalAsig);
-				pw.println("OK " + idComando + " 200 " + totalAsig);
-			break;
-			
-			case "COUNTMATRICULA":
-				int totalMat = data.getMatRepository().count();
-				System.out.println("RESPUESTA: OK " + idComando + " 200 " + totalMat);
-				pw.println("OK " + idComando + " 200 " + totalMat);
-			break;
-			
-			case "COUNTALU":
-				int totalAlu = data.getMatRepository().count();
-				System.out.println("RESPUESTA: OK " + idComando + " 200 " + totalAlu);
-				pw.println("OK " + idComando + " 200 " + totalAlu);
-			break;
-		
-			
-			// [idComando] SESIONES = OK [idComando] [cod_respuesta] [num_sesiones] SESIONES_ACTIVAS
-			case "SESIONES":
-				int total;
-				
-				synchronized(candado) {
-					total = sesiones;
-				}
-				
-				System.out.println("RESPUESTA: OK " + idComando + " 200 " + total + " SESIONES_ACTIVAS");
-				pw.println("OK " + idComando + " 200 " + total + " SESIONES_ACTIVAS");
-			break;
-		
-			case "EXIT":
-				pw.println("OK " + idComando + " 200 CERRANDO_CONEXIÓN...");
-				cerrarConexion();
-				break;
-		
-			default:
-				pw.println("FAILED " + idComando + " 400 COMANDO_NO_EXISTENTE");
-		}
-		
-		pw.flush();
-	}
-	
-	
-	// AUTENTICACION INICIAL
-	private void autenticarCliente(String comandoCompleto) {
-		String [] partes = comandoCompleto.split(" ");
-		
-		if(partes.length < 2) {
-			System.out.println("RESPUESTA: FAILED 0 400 comando_no_valido");
-			pw.println("FAILED 0 400 comando_no_valido");
-			return;
-		}
-		
-		String idComando = partes[0], comando = partes[1];
-		
-		switch(comando.toUpperCase()) {
-		
-			// AUTENTICAR NOMBRE DE USUARIO
-			case "USER":
-				if(partes.length != 3) {
-					System.out.println("RESPUESTA: FAILED " + idComando + " 400 FALTA_NOMBRE");
-					pw.println("FAILED " + idComando + " 400 FALTA_NOMBRE");
-				} else {
-					String nombre = partes[2];
+				// [idComando] SESIONES = OK [idComando] [cod_respuesta] [num_sesiones] SESIONES_ACTIVAS
+				case "SESIONES":
+					int total;
 					
-					if(ServerConfig.nombre.equals(nombre)) {
-						nombreCorrecto = true;
-						System.out.println("RESPUESTA: OK " + idComando + " 200 NOMBRE_OK");
-						pw.println("OK " + idComando + " 200 NOMBRE_OK");
-					} else {
-						nombreCorrecto = false;
-						System.out.println("RESPUESTA: FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
-						pw.println("FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
+					synchronized(candado) {
+						total = sesiones;		
 					}
-				}
-			break;
-			
-			// AUTENTICAR CONTRASEÑA
-			case "PASS":
-				if(partes.length != 3) {
-					System.out.println("RESPUESTA: FAILED " + idComando + " 402 FALTA_CONTRASEÑA");
-					pw.println("FAILED " + idComando + " 402 FALTA_CONTRASEÑA");
-				} else {
-					String contrasena = partes[2];
-					if(nombreCorrecto) {
-						if(ServerConfig.contrasena.equals(contrasena)) {
-							contrasenaCorrecta = true;
 							
-							System.out.println("RESPUESTA: OK " + idComando + " 200 CONTRASEÑA_OK");
-							pw.println("OK " + idComando + " 200 CONTRASEÑA_OK");
+					System.out.println("RESPUESTA: OK " + idComando + " 200 " + total + " SESIONES_ACTIVAS");
+					pw.println("OK " + idComando + " 200 " + total + " SESIONES_ACTIVAS");
+				break;
+				
+				// ----------------------------------------------------------- AUTENTICAR USUARIO
+				case "USER":
+					if(partes.length != 3) {
+						System.out.println("RESPUESTA: FAILED " + idComando + " 400 FALTA_NOMBRE");
+						pw.println("FAILED " + idComando + " 400 FALTA_NOMBRE");
+					} else {
+						String nombre = partes[2];
+						
+						if(ServerConfig.nombre.equals(nombre)) {
+							nombreCorrecto = true;
+							System.out.println("RESPUESTA: OK " + idComando + " 200 NOMBRE_OK");
+							pw.println("OK " + idComando + " 200 NOMBRE_OK");
 						} else {
-							contrasenaCorrecta = false;
-							
-							System.out.println("RESPUESTA: FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
-							pw.println("FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
+							nombreCorrecto = false;
+							System.out.println("RESPUESTA: FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
+							pw.println("FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
 						}
-					} else {
-						System.out.println("RESPUESTA: FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
-						pw.println("FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
 					}
-				}
-			break;
+				break;
+				
+				// ----------------------------------------------------------- AUTENTICAR CONTRASEÑA
+				case "PASS":
+					if(partes.length != 3) {
+						System.out.println("RESPUESTA: FAILED " + idComando + " 402 FALTA_CONTRASEÑA");
+						pw.println("FAILED " + idComando + " 402 FALTA_CONTRASEÑA");
+					} else {
+						String contrasena = partes[2];
+						if(nombreCorrecto) {
+							if(ServerConfig.contrasena.equals(contrasena)) {
+								contrasenaCorrecta = true;
+								
+								System.out.println("RESPUESTA: OK " + idComando + " 200 CONTRASEÑA_OK");
+								pw.println("OK " + idComando + " 200 CONTRASEÑA_OK");
+							} else {
+								contrasenaCorrecta = false;
+								
+								System.out.println("RESPUESTA: FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
+								pw.println("FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
+							}
+						} else {
+							System.out.println("RESPUESTA: FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
+							pw.println("FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
+						}
+					}
+				break;
+				
+				
+				// SALIR DEL PROGRAMA
+				case "EXIT":
+					pw.println("OK " + idComando + " 200 CERRANDO_CONEXIÓN...");
+					cerrarConexion();
+				break;
+				
+				default:
+					pw.println("FAILED " + idComando + " 400 COMANDO_NO_EXISTENTE");
+			}
 			
-			default:
-				pw.println("FAILED " + idComando + " 400 COMANDO_NO_EXISTENTE");
+			pw.flush();
 		}
-		
-		pw.flush();
 	}
 	
 	
-	// CERRAR SOCKET
+	//  ----------------------------------------------------------- GESTIONAR COMANDO COUNT
+	private void gestionarCount(String idComando, String comando) {
+	    int total = -1;
+
+	    switch (comando) {
+	        case "COUNTTIT":
+	            total = data.getTitulacionRepository().count();
+	            break;
+
+	        case "COUNTASIG":
+	            total = data.getAsigRepository().count();
+	            break;
+
+	        case "COUNTMATRICULA":
+	            total = data.getMatRepository().count();
+	            break;
+
+	        case "COUNTALU":
+	            total = data.getAluRepository().count();
+	            break;
+
+	        default:
+	            System.out.println("RESPUESTA: FAILED " + idComando + " 400 COMANDO_COUNT_NO_VALIDO");
+	            pw.println("FAILED " + idComando + " 400 COMANDO_COUNT_NO_VALIDO");
+	            pw.flush();
+	            return;
+	    }
+
+	    System.out.println("RESPUESTA: OK " + idComando + " 200 " + total);
+	    pw.println("OK " + idComando + " 200 " + total);
+	    pw.flush();
+	}
+	
+	
+	//  ----------------------------------------------------------- CERRAR SOCKET
 	private void cerrarConexion() {
 		try {
 			if(socketCliente.isConnected()) socketCliente.close();
@@ -225,14 +214,6 @@ public class ClientHandler extends Thread{
 			
 		} catch(IOException ex) {
 			System.out.println(ex.getMessage());
-		}
-	}
-	
-	
-	// GETTERS & SETTERS
-	public static int getSesiones() {
-		synchronized(candado) {
-			return sesiones;
 		}
 	}
 }
