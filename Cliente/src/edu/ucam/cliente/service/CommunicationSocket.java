@@ -52,10 +52,12 @@ public class CommunicationSocket implements ICommunicationServer{
 			pw.println(idComunicacion + " " + comando);
 			pw.flush();
 			
-			System.out.println("\nComando enviado al servidor: " + idComunicacion + " " + comando);
+			
+			System.out.println("\nComando enviado al servidor: " + idComunicacion + " " + comando); // BORRAR 
 			idComunicacion++;
 			String respuesta = br.readLine();
 			
+			// DEJAR RESPUESTA SOLO
 			if(respuesta != null) System.out.println("Respuesta del servidor: " + respuesta + "\n");
 			else System.out.println("Ninguna respuesta por parte del servidor.\n");
 			

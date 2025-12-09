@@ -1,4 +1,4 @@
-package edu.ucam.cliente.service;
+package edu.ucam.cliente.service.repositories;
 
 import edu.ucam.cliente.interfaces.IChannelData;
 import edu.ucam.cliente.interfaces.ICommunicationServer;

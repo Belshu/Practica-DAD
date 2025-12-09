@@ -1,11 +1,12 @@
-package edu.ucam.cliente.service;
+package edu.ucam.cliente.service.repositories;
 
 import java.io.IOException;
 import java.util.List;
 
 import edu.ucam.cliente.interfaces.*;
+import edu.ucam.cliente.service.ResponseParser;
 
-public class BaseRepository <T> implements IRepository<T> {
+public abstract class BaseRepository <T> implements IRepository<T> {
 	protected final ICommunicationServer communication;
 	protected final IChannelData channelData;
 	protected final String addComando, removeComando, getComando, listComando, countComando, updateComando;
@@ -62,8 +63,29 @@ public class BaseRepository <T> implements IRepository<T> {
 
 	@Override
 	public int modelSize() {
-		// TODO Auto-generated method stub
-		return 0;
+		try {
+			String respuestaServidor = communication.enviarComando(countComando);
+			ResponseParser parser = new ResponseParser(respuestaServidor);
+			
+			if(parser.isOK()) {
+				String msg = parser.getMessage();
+				try {
+					return Integer.parseInt(msg);
+				} catch(NumberFormatException ex) {
+					System.out.println("ERROR: parseo de COUNT (" + countComando + "): " + msg);
+					return -1;
+				}
+			} else {
+				System.out.println("Error en " + countComando 
+		                + " | código: " + parser.getCodigo()
+		                + " | mensaje: " + parser.getMessage());
+		            return -1;
+			}
+			
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+			return -1;
+		}
 	}
 	
 }

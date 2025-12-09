@@ -10,9 +10,8 @@ import edu.ucam.cliente.interfaces.IRepository;
 import edu.ucam.cliente.service.AuthenticationService;
 import edu.ucam.cliente.service.ChannelData;
 import edu.ucam.cliente.service.CommunicationSocket;
-import edu.ucam.cliente.service.SubjectRepository;
-import edu.ucam.cliente.service.TituRepository;
-
+import edu.ucam.cliente.service.repositories.*;
+import edu.ucam.domain.Alumno;
 import edu.ucam.domain.Asignatura;
 import edu.ucam.domain.Matricula;
 import edu.ucam.domain.Titulacion;
@@ -22,8 +21,8 @@ public class ClienteERP {
 	private final IAuthentication autenticacion;
 	private final IRepository<Asignatura> repositorioAsignaturas;
 	private final IRepository<Titulacion> repositorioTitulaciones;
-	// private final IRepository<Matricula> repositorioMatriculas;
-	// private final IRepository<Alumno> repositorioAlumnos;
+	private final IRepository<Matricula> repositorioMatriculas;
+	private final IRepository<Alumno> repositorioAlumnos;
 	
 	
 	// CONEXIÓN DEL SOCKET CON EL SERVIDOR, CONECTAR Y AUTENTICACIÓN
@@ -35,8 +34,8 @@ public class ClienteERP {
 		this.autenticacion = new AuthenticationService(this.comunicacion);
 		this.repositorioAsignaturas = new SubjectRepository(comunicacion, channelData);
 		this.repositorioTitulaciones = new TituRepository(comunicacion, channelData);
-		// this.repositorioMatriculas = new MatRepository(communication, channelData);
-		// this.repositorioMatriculas = new AluRepository(communication, channelData);
+		this.repositorioMatriculas = new MatRepository(comunicacion, channelData);
+		this.repositorioAlumnos = new AluRepository(comunicacion, channelData);
 	}
 	
 	
@@ -56,7 +55,7 @@ public class ClienteERP {
 	}
 	
 	
-	// GETTERS & SETTERS
+	// GETTERS
 	public ICommunicationServer getComunicacion() {
 		return comunicacion;
 	}

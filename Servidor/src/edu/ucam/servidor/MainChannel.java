@@ -5,11 +5,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import edu.ucam.servidor.config.ServerConfig;
+import edu.ucam.servidor.repositories.ERPDataManager;
 
 public class MainChannel {
 	private ServerSocket socket = null;
 	private Socket socketCliente = null;
 	ClientHandler hilo = null;
+	private final ERPDataManager dataManager = new ERPDataManager();
 	
 	
 	// CONSTRUCTOR
@@ -28,7 +30,7 @@ public class MainChannel {
 			while((socketCliente = socket.accept()) != null) {
 				System.out.println("Cliente conectado: " + socketCliente.getInetAddress().getHostAddress() + " : " + socketCliente.getPort());
 				
-				hilo = new ClientHandler(socketCliente);
+				hilo = new ClientHandler(socketCliente, dataManager);
 				hilo.start();
 			}
 		} catch (IOException ex) {

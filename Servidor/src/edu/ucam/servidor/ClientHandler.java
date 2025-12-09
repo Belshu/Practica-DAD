@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import edu.ucam.servidor.config.ServerConfig;
+import edu.ucam.servidor.repositories.ERPDataManager;
 
 public class ClientHandler extends Thread{
 	private Socket socketCliente = null;
@@ -17,11 +18,13 @@ public class ClientHandler extends Thread{
 	private static int sesiones = 0;
 	private boolean nombreCorrecto = false, contrasenaCorrecta = false;
 	private static final Object candado = new Object();
+	 private final ERPDataManager data;
 	
 	
 	// CONSTRUCTOR: tener referencia del socket creado
-	public ClientHandler(Socket socketCliente) {
+	public ClientHandler(Socket socketCliente, ERPDataManager data) {
 		this.socketCliente = socketCliente;
+		this.data = data;
 		
 		try {
 			br = new BufferedReader(new InputStreamReader(socketCliente.getInputStream()));
@@ -46,7 +49,7 @@ public class ClientHandler extends Thread{
 			pw.println("OK 0 200 Bienvenido!");
 			pw.flush();
 			
-			String mensaje = null; 
+			String mensaje = null;
 			
 			
 			// AUTENTICAR NOMBRE DE USUARIO
@@ -83,6 +86,7 @@ public class ClientHandler extends Thread{
 		if(partes.length < 2) {
 			System.out.println("RESPUESTA: FAILED 0 400 comando_no_valido");
 			pw.println("FAILED 0 400 comando_no_valido");
+			pw.flush();
 			return;
 		}
 		
@@ -91,7 +95,33 @@ public class ClientHandler extends Thread{
 		switch(comando.toUpperCase())  {
 		
 		
-			// X SESIONES = OK X 200 1000 SESIONES_ACTIVAS
+		// [idComando] COUNT = OK [idComando] [cod_respuesta] [tamaño de la lista]
+			case "COUNTTIT":
+				int totalTit = data.getTitulacionRepository().count();
+				System.out.println("RESPUESTA: OK " + idComando + " 200 " + totalTit);
+				pw.println("OK " + idComando + " 200 " + totalTit);
+			break;
+			
+			case "COUNTASIG":
+				int totalAsig = data.getAsigRepository().count();
+				System.out.println("RESPUESTA: OK " + idComando + " 200 " + totalAsig);
+				pw.println("OK " + idComando + " 200 " + totalAsig);
+			break;
+			
+			case "COUNTMATRICULA":
+				int totalMat = data.getMatRepository().count();
+				System.out.println("RESPUESTA: OK " + idComando + " 200 " + totalMat);
+				pw.println("OK " + idComando + " 200 " + totalMat);
+			break;
+			
+			case "COUNTALU":
+				int totalAlu = data.getMatRepository().count();
+				System.out.println("RESPUESTA: OK " + idComando + " 200 " + totalAlu);
+				pw.println("OK " + idComando + " 200 " + totalAlu);
+			break;
+		
+			
+			// [idComando] SESIONES = OK [idComando] [cod_respuesta] [num_sesiones] SESIONES_ACTIVAS
 			case "SESIONES":
 				int total;
 				
@@ -104,7 +134,7 @@ public class ClientHandler extends Thread{
 			break;
 		
 			case "EXIT":
-				pw.println("OK " + idComando + " 200 CERRANDO CONEXIÓN...");
+				pw.println("OK " + idComando + " 200 CERRANDO_CONEXIÓN...");
 				cerrarConexion();
 				break;
 		
