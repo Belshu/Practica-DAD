@@ -14,7 +14,9 @@ public class ClientHandler extends Thread{
 	private BufferedReader br;
 	private PrintWriter pw;
 	
+	private static int sesiones = 0;
 	private boolean nombreCorrecto = false, contrasenaCorrecta = false;
+	private static final Object candado = new Object();
 	
 	
 	// CONSTRUCTOR: tener referencia del socket creado
@@ -24,6 +26,11 @@ public class ClientHandler extends Thread{
 		try {
 			br = new BufferedReader(new InputStreamReader(socketCliente.getInputStream()));
 			pw = new PrintWriter(new OutputStreamWriter(socketCliente.getOutputStream()));
+			
+			synchronized(candado) {
+				sesiones++;
+			}
+			
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
@@ -82,6 +89,20 @@ public class ClientHandler extends Thread{
 		String idComando = partes[0], comando = partes[1];
 		
 		switch(comando.toUpperCase())  {
+		
+		
+			// X SESIONES = OK X 200 1000 SESIONES_ACTIVAS
+			case "SESIONES":
+				int total;
+				
+				synchronized(candado) {
+					total = sesiones;
+				}
+				
+				System.out.println("RESPUESTA: OK " + idComando + " 200 " + total + " SESIONES_ACTIVAS");
+				pw.println("OK " + idComando + " 200 " + total + " SESIONES_ACTIVAS");
+			break;
+		
 			case "EXIT":
 				pw.println("OK " + idComando + " 200 CERRANDO CONEXIÓN...");
 				cerrarConexion();
@@ -167,8 +188,21 @@ public class ClientHandler extends Thread{
 	private void cerrarConexion() {
 		try {
 			if(socketCliente.isConnected()) socketCliente.close();
+			
+			synchronized(candado) {
+				sesiones--;
+			}
+			
 		} catch(IOException ex) {
 			System.out.println(ex.getMessage());
+		}
+	}
+	
+	
+	// GETTERS & SETTERS
+	public static int getSesiones() {
+		synchronized(candado) {
+			return sesiones;
 		}
 	}
 }

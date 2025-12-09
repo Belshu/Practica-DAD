@@ -25,6 +25,8 @@ public class ClienteERP {
 	// private final IRepository<Matricula> repositorioMatriculas;
 	// private final IRepository<Alumno> repositorioAlumnos;
 	
+	
+	// CONEXIÓN DEL SOCKET CON EL SERVIDOR, CONECTAR Y AUTENTICACIÓN
 	public ClienteERP() throws IOException{
 		this.comunicacion = new CommunicationSocket();
 		this.comunicacion.connectar();
@@ -36,6 +38,9 @@ public class ClienteERP {
 		// this.repositorioMatriculas = new MatRepository(communication, channelData);
 		// this.repositorioMatriculas = new AluRepository(communication, channelData);
 	}
+	
+	
+	// MÉTODOS
 	
 	public boolean autenticar(String usuario, String password) throws IOException {
 		return autenticacion.autenticar(usuario, password);
@@ -50,6 +55,8 @@ public class ClienteERP {
 		return false;
 	}
 	
+	
+	// GETTERS & SETTERS
 	public ICommunicationServer getComunicacion() {
 		return comunicacion;
 	}

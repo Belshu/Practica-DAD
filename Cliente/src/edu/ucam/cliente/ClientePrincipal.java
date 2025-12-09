@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class ClientePrincipal {
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args){
+		
 		// PREGUNTAR AL USUARIO EL NOMBRE Y LA CONTRASEÑA
 		String usuario = null, contrasena = null;
 		Scanner S = new Scanner(System.in);
@@ -12,24 +13,34 @@ public class ClientePrincipal {
 		System.out.print("Nombre: "); usuario = S.nextLine();
 		System.out.print("Contraseña: "); contrasena = S.nextLine();
 		
-		ClienteERP cliente = new ClienteERP();
-
-		if(cliente.autenticar(usuario, contrasena)) {
-			System.out.println("\nADMINISTRADOR AUTENTICADO\n");
+		
+		// COMENZAR CONEXIÓN CON EL SERVIDOR
+		try {
+			ClienteERP cliente = new ClienteERP();
 			
-			System.out.print("(Escribe los comandos a continuacion)> ");
-			String mensaje = S.nextLine();
-			
-			while(mensaje != null && !mensaje.equalsIgnoreCase("EXIT")) {
-				cliente.getComunicacion().enviarComando(mensaje);
-				System.out.print("> ");
-				mensaje = S.nextLine();
+			if(cliente.autenticar(usuario, contrasena)) { // CLIENTE AUTENTICADO 
+				System.out.println("ADMINISTRADOR AUTENTICADO\n");
+				
+				System.out.print("(Escribe los comandos a continuacion)> ");
+				String mensaje = S.nextLine();
+				
+				
+				// ESCRIBIR COMANDOS
+				while(mensaje != null && !mensaje.equalsIgnoreCase("EXIT")) {
+					cliente.getComunicacion().enviarComando(mensaje);
+					System.out.print("> ");
+					mensaje = S.nextLine();
+				}
+				
+				
+				cliente.cerrarSesion();
+			} else { // ---------------------------------------------- CLIENTE NO AUTENTICADO
+				System.out.println("Autenticación incorrecta");
 			}
-			
-			cliente.cerrarSesion();
-		} else {
-			System.out.println("Autenticación incorrecta");
+		} catch(IOException ex) {
+			System.out.println(ex.getMessage());
 		}
+		
 		
 		System.out.println("FIN DE LA APLICACIÓN");
 		S.close();
