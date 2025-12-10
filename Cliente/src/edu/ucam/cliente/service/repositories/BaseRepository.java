@@ -56,8 +56,9 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 		
 		if(parser.isPREOK()) {
 			T responseModel = (T) channelData.recibirObjeto(parser.getIp(), parser.getPort());
-			return responseModel;
+			if(responseModel != null) return responseModel;
 		} 
+		
 		return null;
 	}
 

@@ -52,7 +52,6 @@ public class CommunicationSocket implements ICommunicationServer{
 			pw.println(idComunicacion + " " + comando);
 			pw.flush();
 			
-			
 			System.out.println("\nComando enviado al servidor: " + idComunicacion + " " + comando); // BORRAR 
 			idComunicacion++;
 			String respuesta = br.readLine();

@@ -1,29 +1,38 @@
-package edu.ucam.cliente.service;
+package edu.ucam.servidor.channels;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 
-import edu.ucam.cliente.interfaces.IChannelData;
+import edu.ucam.servidor.config.ServerConfig;
 
-public class ChannelData implements IChannelData{
-	@Override
-	public void enviarObjeto(String ip, String puerto, Object modelo) {
-		Socket socket = null;
+public class DataChannel {
+	private final ServerSocket serverSocket;
+	
+	public DataChannel() throws IOException {
+		this.serverSocket = new ServerSocket(ServerConfig.puertoObjetos);
+		System.out.println("Canal de datos escuchando en puerto: " + ServerConfig.puertoObjetos);
+	}
+	
+	public Socket esperarConexion() {
+		try {
+			return serverSocket.accept();
+		} catch(IOException ex) {
+			System.out.println(ex.getMessage());
+		}
+		
+		return null;
+	}
+	
+	public void enviarObjeto(Socket socket, Object modelo) {
 		ObjectOutputStream oos = null;
 		
 		try {
-			int p = Integer.parseInt(puerto);
-			socket = new Socket(ip, p);
-			
-			oos = new ObjectOutputStream(socket.getOutputStream());
 			oos.writeObject(modelo);
 			oos.flush();
-			
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
-		} catch(Exception ex) {
 			System.out.println(ex.getMessage());
 		} finally {
 			
@@ -43,27 +52,22 @@ public class ChannelData implements IChannelData{
 				} catch(IOException ex) {
 					System.out.println(ex.getMessage());
 				}
-			}
+			}			
 		}
 	}
-
-	@Override
-	public Object recibirObjeto(String ip, String puerto) {
-		Socket socket = null;
+	
+	public Object recibirObjeto(Socket socket) {
 		ObjectInputStream ois = null;
 		
 		try {
-			int p = Integer.parseInt(puerto);
-			socket = new Socket(ip, p);
-			
 			ois = new ObjectInputStream(socket.getInputStream());
-			
+
 			return ois.readObject();
 			
 		} catch(IOException ex) {
 			System.out.println(ex.getMessage());
 		} catch(ClassNotFoundException ex) {
-			System.out.println("Problema con la clase recibida: " + ex.getMessage());
+			System.out.println("Error en la clase");
 		} finally {
 			
 			// CERRAR OBJETO
@@ -87,5 +91,4 @@ public class ChannelData implements IChannelData{
 		
 		return null;
 	}
-
 }
