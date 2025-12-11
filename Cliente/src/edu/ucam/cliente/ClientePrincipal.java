@@ -6,15 +6,16 @@ import java.util.Scanner;
 public class ClientePrincipal {
 	public static void main(String[] args){
 		
-		// PREGUNTAR AL USUARIO EL NOMBRE Y LA CONTRASEÑA
+		// ---------------------------------------------- PREGUNTAR AL USUARIO EL NOMBRE Y LA CONTRASEÑA
 		String usuario = null, contrasena = null;
 		Scanner S = new Scanner(System.in);
-	
-		System.out.print("Nombre: "); usuario = S.nextLine();
-		System.out.print("Contraseña: "); contrasena = S.nextLine();
 		
+		while(usuario == null || usuario.isEmpty() || contrasena == null || contrasena.isEmpty()) {
+			System.out.print("Nombre: "); usuario = S.nextLine();
+			System.out.print("Contraseña: "); contrasena = S.nextLine();
+		}
 		
-		// COMENZAR CONEXIÓN CON EL SERVIDOR
+		// ---------------------------------------------- COMENZAR CONEXIÓN CON EL SERVIDOR
 		try {
 			ClienteERP cliente = new ClienteERP();
 			

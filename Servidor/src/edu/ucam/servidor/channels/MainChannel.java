@@ -16,7 +16,7 @@ public class MainChannel {
 	private final ERPDataManager dataManager = new ERPDataManager();
 	
 	
-	// CONSTRUCTOR
+	// ---------------------------------------------- CONSTRUCTOR
 	public MainChannel() throws IOException {
 		socket = new ServerSocket(ServerConfig.puertoComandos);
 		this.dataChannel = new DataChannel();

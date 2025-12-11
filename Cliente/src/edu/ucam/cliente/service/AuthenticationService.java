@@ -16,7 +16,6 @@ public class AuthenticationService implements IAuthentication{
 	public boolean autenticar(String usuario, String contrasena){
 		try {
 			String respuestaServidor = communication.enviarComando("USER " + usuario); 
-			// System.out.println("Respuesta del servidor: " + respuestaServidor);
 			
 			if(respuestaServidor != null) {
 				if(respuestaServidor.startsWith("OK")) {

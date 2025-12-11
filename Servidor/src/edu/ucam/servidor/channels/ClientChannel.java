@@ -94,7 +94,9 @@ public class ClientChannel extends Thread{
 		
 		String idComando = partes[0], comando = partes[1].toUpperCase();
 		
-		
+		// if (comando.startsWith("ADD")) gestionarAdd(idComando, partes);
+		// else if(comando.startsWith("GET")) gestionarGet(idComando, partes);
+		// else
 		if(comando.startsWith("COUNT")) gestionarCount(idComando, comando);
 		else {
 			switch(comando) {

@@ -27,7 +27,7 @@ public class ChannelData implements IChannelData{
 			System.out.println(ex.getMessage());
 		} finally {
 			
-			// CERRAR OBJETO
+			// ---------------------------------------------- CERRAR OBJETO
 			if(oos != null) {
 				try {
 					oos.close();
@@ -36,7 +36,7 @@ public class ChannelData implements IChannelData{
 				}
 			}
 			
-			// CERRAR SOCKET
+			// ---------------------------------------------- CERRAR SOCKET
 			if(socket != null && !socket.isClosed()) {
 				try {
 					socket.close();
@@ -66,7 +66,7 @@ public class ChannelData implements IChannelData{
 			System.out.println("Problema con la clase recibida: " + ex.getMessage());
 		} finally {
 			
-			// CERRAR OBJETO
+			// ---------------------------------------------- CERRAR OBJETO
 			if(ois != null) {
 				try {
 					ois.close();
@@ -75,7 +75,7 @@ public class ChannelData implements IChannelData{
 				}
 			}
 			
-			// CERRAR SOCKET
+			// ---------------------------------------------- CERRAR SOCKET
 			if(socket != null && !socket.isClosed()) {
 				try {
 					socket.close();

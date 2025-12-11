@@ -32,6 +32,8 @@ public class ClienteERP {
 	
 		IChannelData channelData = new ChannelData();
 		this.autenticacion = new AuthenticationService(this.comunicacion);
+		
+		// ---------------------------------------------- REPOSITORIOS
 		this.repositorioAsignaturas = new SubjectRepository(comunicacion, channelData);
 		this.repositorioTitulaciones = new TituRepository(comunicacion, channelData);
 		this.repositorioMatriculas = new MatRepository(comunicacion, channelData);
@@ -39,7 +41,7 @@ public class ClienteERP {
 	}
 	
 	
-	// MÉTODOS
+	// ---------------------------------------------- MÉTODOS
 	
 	public boolean autenticar(String usuario, String password) throws IOException {
 		return autenticacion.autenticar(usuario, password);
@@ -55,7 +57,7 @@ public class ClienteERP {
 	}
 	
 	
-	// GETTERS
+	// ---------------------------------------------- GETTERS
 	public ICommunicationServer getComunicacion() {
 		return comunicacion;
 	}
