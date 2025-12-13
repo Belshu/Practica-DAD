@@ -7,7 +7,7 @@ public class ResponseParser {
 	 * type = OK | PREOK | FAILED
 	 * numero = idComando
 	 * codigo = 200: OK, 400: FAILED, 500: PREOK
-	 * mensaje = MENSAJE_DEL_SERVIDOR | IP
+	 * mensaje/ip = MENSAJE_DEL_SERVIDOR | IP
 	 * puerto = PUERTO 
 	 * */
 	public ResponseParser(String respuesta) {

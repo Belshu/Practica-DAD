@@ -26,14 +26,19 @@ public class DataChannel {
 		return null;
 	}
 	
-	public void enviarObjeto(Socket socket, Object modelo) {
+	public boolean enviarObjeto(Socket socket, Object modelo) {
 		ObjectOutputStream oos = null;
 		
 		try {
+			oos = new ObjectOutputStream(socket.getOutputStream());
 			oos.writeObject(modelo);
 			oos.flush();
+			
+			return true;
 		} catch(IOException ex) {
 			System.out.println(ex.getMessage());
+			
+			return false;
 		} finally {
 			
 			// CERRAR OBJETO
@@ -52,7 +57,7 @@ public class DataChannel {
 				} catch(IOException ex) {
 					System.out.println(ex.getMessage());
 				}
-			}			
+			}
 		}
 	}
 	

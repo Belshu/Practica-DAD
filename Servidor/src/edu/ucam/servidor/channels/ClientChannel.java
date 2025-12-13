@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import edu.ucam.domain.Titulacion;
 import edu.ucam.servidor.config.ServerConfig;
 import edu.ucam.servidor.repositories.ERPDataManager;
 
@@ -95,9 +96,9 @@ public class ClientChannel extends Thread{
 		String idComando = partes[0], comando = partes[1].toUpperCase();
 		
 		// if (comando.startsWith("ADD")) gestionarAdd(idComando, partes);
-		// else if(comando.startsWith("GET")) gestionarGet(idComando, partes);
-		// else
-		if(comando.startsWith("COUNT")) gestionarCount(idComando, comando);
+		// else 
+		if(comando.startsWith("GET")) gestionarGet(idComando, partes);
+		else if(comando.startsWith("COUNT")) gestionarCount(idComando, comando);
 		else {
 			switch(comando) {
 			
@@ -149,7 +150,8 @@ public class ClientChannel extends Thread{
 							} else {
 								contrasenaCorrecta = false;
 								
-								System.out.println("RESPUESTA: FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
+								System.out.println("RESPUESTA: FAILED " + idComando + 
+										" 401 CONTRASEÑA_INCORRECTA");
 								pw.println("FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
 							}
 						} else {
@@ -171,6 +173,55 @@ public class ClientChannel extends Thread{
 			}
 			
 			pw.flush();
+		}
+	}
+	
+	
+	//  ----------------------------------------------------------- GESTIONAR COMANDO GET
+	private void gestionarGet(String idComando, String [] partes) {
+		// partes [0] = idComando;
+		// partes [1] = GETTIT
+		// partes [2] = id modelo
+		
+		if(partes.length < 3) {
+			System.out.println("RESPUESTA: FAILED " + idComando + " 400 FALTAN_PARAMETROS_COMANDO:GET");
+			pw.println("FAILED " + idComando + " 400 FALTAN_PARAMETROS_COMANDO:GET");
+			pw.flush();
+			return;
+		}
+		
+		String comando = partes[1].toUpperCase(), id = partes[2];
+		
+		switch(comando) {
+			case "GETTIT":
+				Titulacion t = data.getTitulacionRepository().get(id);
+				
+				if(t == null) {
+					System.out.println("RESPUESTA: FAILED " + idComando + " 404 TITULACION_NO_ENCONTRADA");
+			        pw.println("FAILED " + idComando + " 404 TITULACION_NO_ENCONTRADA");
+			        pw.flush();
+			        return;
+				}
+				
+				pw.println("PREOK " + idComando + " 500 " + socketCliente.getInetAddress().getHostAddress()
+						+ " " + ServerConfig.puertoObjetos);
+				pw.flush();
+				
+				Socket socketDatos = null;
+				
+				if(abrirDataChannel(idComando, socketDatos)) {
+					if(dataChannel.enviarObjeto(socketDatos, t)) {
+						System.out.println("RESPUESTA: OK " + idComando + " 200 TITULACION_ENVIADA");
+					    pw.println("OK " + idComando + " 200 TITULACION_ENVIADA");
+					    pw.flush();
+					} else {
+						System.out.println("RESPUESTA: FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO");
+				        pw.println("FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO");
+				        pw.flush();
+					}
+				}
+				
+			break;
 		}
 	}
 	
@@ -206,6 +257,20 @@ public class ClientChannel extends Thread{
 	    System.out.println("RESPUESTA: OK " + idComando + " 200 " + total);
 	    pw.println("OK " + idComando + " 200 " + total);
 	    pw.flush();
+	}
+	
+	private boolean abrirDataChannel (String idComando, Socket socketDatos) {
+		try {
+			socketDatos = dataChannel.esperarConexion();
+			if(socketDatos != null) return true;
+			
+		} catch(Exception ex) {
+			System.out.println("Error de conexion de datos: " + ex.getMessage());
+	        pw.println("FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO");
+	        pw.flush();
+		}
+		
+		return false;
 	}
 	
 	

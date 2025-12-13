@@ -51,15 +51,30 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public T getModel(String id) throws IOException, ClassNotFoundException {
-		String respuesta = communication.enviarComando(getComando);
+		String respuesta = communication.enviarComando(getComando + " " + id);
+		
+		if(respuesta == null) {
+			System.out.println("Sin respuesta por parte del servidor: " + getComando);
+		}
+		
 		ResponseParser parser = new ResponseParser(respuesta);
 		
 		if(parser.isPREOK()) {
 			T responseModel = (T) channelData.recibirObjeto(parser.getIp(), parser.getPort());
-			if(responseModel != null) return responseModel;
-		} 
+			return responseModel;
+		} else if (parser.isOK()) {
+			return null;
+		}
 		
-		return null;
+		else {
+			System.out.println(
+		            "Error en " + getComando +
+		            " → código: " + parser.getCodigo() +
+		            " mensaje: " + parser.getMessage()
+		        );
+			
+			return null;
+		}
 	}
 
 	@Override

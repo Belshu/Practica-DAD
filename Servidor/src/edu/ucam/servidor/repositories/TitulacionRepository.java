@@ -16,7 +16,13 @@ public class TitulacionRepository {
 		titulaciones.add(t);
 	}
 	
-	public synchronized Titulacion get(String id) {
+	public synchronized Titulacion get(String id) {		
+		for(Titulacion t : titulaciones) {
+			if(t.getId().equals(id)) {
+				return t;
+			}
+		}
+		
 		return null;
 	}
 	
