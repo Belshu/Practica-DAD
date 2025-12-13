@@ -26,7 +26,7 @@ public class CommunicationSocket implements ICommunicationServer{
 			
 			
 			// Mensaje de bienvenida del servidor
-			System.out.println(recibirComando());
+			System.out.println(recibirRespuesta());
 			
 			estado = true;
 		} catch(IOException ex) {
@@ -48,25 +48,18 @@ public class CommunicationSocket implements ICommunicationServer{
 	
 	@Override
 	public String enviarComando(String comando){
-		try {
-			pw.println(idComunicacion + " " + comando);
-			pw.flush();
-			
-			System.out.println("\nComando enviado al servidor: " + idComunicacion + " " + comando); // BORRAR 
-			idComunicacion++;
-			String respuesta = br.readLine();
-			
-			// DEJAR RESPUESTA SOLO
-			if(respuesta != null) System.out.println("Respuesta del servidor: " + respuesta + "\n");
-			else System.out.println("Ninguna respuesta por parte del servidor.\n");
-			
-			return respuesta;
-			
-		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
-		}
+		if(comando == null || comando.trim().isEmpty()) return null;
 		
-		return null;
+		pw.println(idComunicacion + " " + comando);
+		pw.flush();
+		
+		idComunicacion++;
+		String respuesta = recibirRespuesta();
+		
+		if(respuesta != null) System.out.println(respuesta + "\n");
+		else System.out.println("Ninguna respuesta por parte del servidor.");
+		
+		return respuesta;
 	}
 	
 	@Override
@@ -74,13 +67,14 @@ public class CommunicationSocket implements ICommunicationServer{
 		return estado;
 	}
 	
-	public String recibirComando(){
+	@Override
+	public String recibirRespuesta(){
 		try {
 			return br.readLine();
 		} catch(IOException ex) {
 			System.out.println(ex.getMessage());
 		}
 		
-		return "";
+		return null;
 	}
 }

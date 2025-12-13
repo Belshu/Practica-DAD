@@ -11,6 +11,7 @@ import edu.ucam.cliente.service.AuthenticationService;
 import edu.ucam.cliente.service.ChannelData;
 import edu.ucam.cliente.service.CommunicationSocket;
 import edu.ucam.cliente.service.repositories.*;
+
 import edu.ucam.domain.Alumno;
 import edu.ucam.domain.Asignatura;
 import edu.ucam.domain.Matricula;
@@ -51,9 +52,38 @@ public class ClienteERP {
 		autenticacion.cerrarSesion();
 	}
 	
-	public boolean insertarAsignatura(Asignatura asig) throws ClassNotFoundException, IOException {
-		repositorioAsignaturas.add(asig);
-		return false;
+	public void ejecutarComando(String mensaje) {
+		if(mensaje == null) return;
+		
+		String [] partes = mensaje.trim().split(" ");
+		String comando = partes[0].toUpperCase(); // ADD, GET, COUNT...
+		
+		try {
+			if(comando.startsWith("GET")) gestionarGet(comando, partes);
+			else comunicacion.enviarComando(mensaje);
+		} catch(IOException ex) {
+			System.out.println("ejecutarComando: " + ex.getMessage());
+		}
+	}
+	
+	private void gestionarGet(String comando, String [] partes) {
+		
+		try {
+			switch(comando) {
+				case "GETTIT":
+					if(partes.length >= 2) {
+						Titulacion t = repositorioTitulaciones.getModel(partes[1]);
+						if(t != null) System.out.println(t.toString());
+					} else {
+						System.out.println("COMANDO INCOMPLETO");
+					}
+				break;
+			}
+		} catch(IOException ex) {
+			System.out.println("ejecutarComando: " + ex.getMessage());
+		} catch (ClassNotFoundException ex) {
+			System.out.println("ejecutarComando: " + ex.getMessage());
+		}
 	}
 	
 	

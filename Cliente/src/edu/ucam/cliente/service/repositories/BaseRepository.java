@@ -7,14 +7,14 @@ import edu.ucam.cliente.interfaces.*;
 import edu.ucam.cliente.service.ResponseParser;
 
 public abstract class BaseRepository <T> implements IRepository<T> {
-	protected final ICommunicationServer communication;
+	protected final ICommunicationServer comunicacion;
 	protected final IChannelData channelData;
 	protected final String addComando, removeComando, getComando, listComando, countComando, updateComando;
 
 	public BaseRepository(ICommunicationServer communication, IChannelData channelData, String addComando,
 			String removeComando, String getComando, String listComando, String countComando, String updateComando) {
 		super();
-		this.communication = communication;
+		this.comunicacion = communication;
 		this.channelData = channelData;
 		this.addComando = addComando;
 		this.removeComando = removeComando;
@@ -51,7 +51,7 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public T getModel(String id) throws IOException, ClassNotFoundException {
-		String respuesta = communication.enviarComando(getComando + " " + id);
+		String respuesta = comunicacion.enviarComando(getComando + " " + id);
 		
 		if(respuesta == null) {
 			System.out.println("Sin respuesta por parte del servidor: " + getComando);
@@ -61,26 +61,28 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 		
 		if(parser.isPREOK()) {
 			T responseModel = (T) channelData.recibirObjeto(parser.getIp(), parser.getPort());
-			return responseModel;
-		} else if (parser.isOK()) {
-			return null;
+			
+			String respuesta2 = comunicacion.recibirRespuesta();
+			
+			if(respuesta2 != null) {
+				ResponseParser parser2 = new ResponseParser(respuesta2);
+				if(parser2.isOK()) return responseModel;
+				
+				System.out.println("Fallo final tras PREOK: " + parser2.getCodigo() + " " + parser2.getMessage());
+				return null;
+			}
+			
+			 System.out.println("No llegó el OK final tras PREOK");
+			 return null;
 		}
 		
-		else {
-			System.out.println(
-		            "Error en " + getComando +
-		            " → código: " + parser.getCodigo() +
-		            " mensaje: " + parser.getMessage()
-		        );
-			
-			return null;
-		}
+		return null;
 	}
 
 	@Override
 	public int modelSize() {
 		try {
-			String respuestaServidor = communication.enviarComando(countComando);
+			String respuestaServidor = comunicacion.enviarComando(countComando);
 			ResponseParser parser = new ResponseParser(respuestaServidor);
 			
 			if(parser.isOK()) {

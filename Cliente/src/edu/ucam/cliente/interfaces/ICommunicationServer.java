@@ -7,5 +7,5 @@ public interface ICommunicationServer {
 	public void desconectar() throws IOException;
 	public boolean isVivo();
 	public String enviarComando(String comando) throws IOException;
-	
+	public String recibirRespuesta();
 }

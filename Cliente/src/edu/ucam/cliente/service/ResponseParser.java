@@ -21,6 +21,7 @@ public class ResponseParser {
 			if("PREOK".equals(type) && chuncks.length >= 5) {
 				this.ip = chuncks[3];
 				this.puerto = chuncks[4];
+				this.mensaje = null;
 			} else {
 				this.mensaje = chuncks[3];
 			}

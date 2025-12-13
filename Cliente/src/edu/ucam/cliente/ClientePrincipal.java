@@ -28,7 +28,13 @@ public class ClientePrincipal {
 				
 				// ESCRIBIR COMANDOS
 				while(mensaje != null && !mensaje.equalsIgnoreCase("EXIT")) {
-					cliente.getComunicacion().enviarComando(mensaje);
+					if (mensaje.trim().isEmpty()) {    
+				        System.out.print("> ");
+				        mensaje = S.nextLine();
+				        continue;
+				    }
+					
+					cliente.ejecutarComando(mensaje);
 					System.out.print("> ");
 					mensaje = S.nextLine();
 				}

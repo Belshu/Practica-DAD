@@ -8,6 +8,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import edu.ucam.domain.Titulacion;
+import edu.ucam.servidor.commandHandlers.CountHandler;
+import edu.ucam.servidor.commandHandlers.GetHandler;
 import edu.ucam.servidor.config.ServerConfig;
 import edu.ucam.servidor.repositories.ERPDataManager;
 
@@ -22,12 +24,21 @@ public class ClientChannel extends Thread{
 	private final ERPDataManager data;
 	private final DataChannel dataChannel;
 	
+	// HANDLERS
+	private final GetHandler getHandler;
+	private final CountHandler countHandler;
+	
+	
 	
 	// CONSTRUCTOR: tener referencia del socket creado
 	public ClientChannel(Socket socketCliente, ERPDataManager data, DataChannel dataChannel) {
 		this.socketCliente = socketCliente;
 		this.data = data;
 		this.dataChannel = dataChannel;
+		
+		this.getHandler = new GetHandler(data, dataChannel);
+		this.countHandler = new CountHandler(data);
+		
 		
 		try {
 			br = new BufferedReader(new InputStreamReader(socketCliente.getInputStream()));
@@ -40,7 +51,6 @@ public class ClientChannel extends Thread{
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
-		
 	}
 	
 	
@@ -84,7 +94,7 @@ public class ClientChannel extends Thread{
 	
 //  ----------------------------------------------------------- GESTIONAR COMANDOS
 	private void gestionarComandos(String comandoCompleto) {
-		String [] partes = comandoCompleto.split(" ");
+		String [] partes = comandoCompleto.trim().split(" ");
 		
 		if(partes.length < 2) {
 			System.out.println("RESPUESTA: FAILED 0 400 comando_no_valido");
@@ -97,8 +107,45 @@ public class ClientChannel extends Thread{
 		
 		// if (comando.startsWith("ADD")) gestionarAdd(idComando, partes);
 		// else 
-		if(comando.startsWith("GET")) gestionarGet(idComando, partes);
-		else if(comando.startsWith("COUNT")) gestionarCount(idComando, comando);
+		if(comando.startsWith("GET")) {
+			if(!nombreCorrecto || !contrasenaCorrecta) {
+				System.out.println("RESPUESTA FAILED " + idComando + " 403 NO_AUTORIZADO");
+				pw.println("FAILED " + idComando + " 403 NO_AUTORIZADO");
+				pw.flush();
+				return;
+			}
+
+			Object obj = getHandler.handle(idComando, partes);
+			
+			if(obj == null) {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 404 OBJETO_NO_ENCONTRADO");
+		        pw.println("FAILED " + idComando + " 404 OBJETO_NO_ENCONTRADO");
+		        pw.flush();
+		        return;
+			}
+			
+			
+			// PREOK
+		    pw.println("PREOK " + idComando + " 200 " + socketCliente.getLocalAddress().getHostAddress() + " " + ServerConfig.puertoObjetos);
+		    pw.flush();
+		    
+		    String respuesta = getHandler.responderGet(idComando, obj, "TITULACION_ENVIADA");
+		    pw.println(respuesta);
+			pw.flush();
+		}
+		else if(comando.startsWith("COUNT")) {
+			if(!nombreCorrecto || !contrasenaCorrecta) {
+				System.out.println("RESPUESTA FAILED " + idComando + " 403 NO_AUTORIZADO");
+				pw.println("FAILED " + idComando + " 403 NO_AUTORIZADO");
+				pw.flush();
+				return;
+			}
+			
+			String respuesta = (String) countHandler.handle(idComando, partes);
+			
+			pw.println(respuesta);
+			pw.flush();
+		}
 		else {
 			switch(comando) {
 			
@@ -175,104 +222,6 @@ public class ClientChannel extends Thread{
 			pw.flush();
 		}
 	}
-	
-	
-	//  ----------------------------------------------------------- GESTIONAR COMANDO GET
-	private void gestionarGet(String idComando, String [] partes) {
-		// partes [0] = idComando;
-		// partes [1] = GETTIT
-		// partes [2] = id modelo
-		
-		if(partes.length < 3) {
-			System.out.println("RESPUESTA: FAILED " + idComando + " 400 FALTAN_PARAMETROS_COMANDO:GET");
-			pw.println("FAILED " + idComando + " 400 FALTAN_PARAMETROS_COMANDO:GET");
-			pw.flush();
-			return;
-		}
-		
-		String comando = partes[1].toUpperCase(), id = partes[2];
-		
-		switch(comando) {
-			case "GETTIT":
-				Titulacion t = data.getTitulacionRepository().get(id);
-				
-				if(t == null) {
-					System.out.println("RESPUESTA: FAILED " + idComando + " 404 TITULACION_NO_ENCONTRADA");
-			        pw.println("FAILED " + idComando + " 404 TITULACION_NO_ENCONTRADA");
-			        pw.flush();
-			        return;
-				}
-				
-				pw.println("PREOK " + idComando + " 500 " + socketCliente.getInetAddress().getHostAddress()
-						+ " " + ServerConfig.puertoObjetos);
-				pw.flush();
-				
-				Socket socketDatos = null;
-				
-				if(abrirDataChannel(idComando, socketDatos)) {
-					if(dataChannel.enviarObjeto(socketDatos, t)) {
-						System.out.println("RESPUESTA: OK " + idComando + " 200 TITULACION_ENVIADA");
-					    pw.println("OK " + idComando + " 200 TITULACION_ENVIADA");
-					    pw.flush();
-					} else {
-						System.out.println("RESPUESTA: FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO");
-				        pw.println("FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO");
-				        pw.flush();
-					}
-				}
-				
-			break;
-		}
-	}
-	
-	
-	//  ----------------------------------------------------------- GESTIONAR COMANDO COUNT
-	private void gestionarCount(String idComando, String comando) {
-	    int total = -1;
-
-	    switch (comando) {
-	        case "COUNTTIT":
-	            total = data.getTitulacionRepository().count();
-	            break;
-
-	        case "COUNTASIG":
-	            total = data.getAsigRepository().count();
-	            break;
-
-	        case "COUNTMATRICULA":
-	            total = data.getMatRepository().count();
-	            break;
-
-	        case "COUNTALU":
-	            total = data.getAluRepository().count();
-	            break;
-
-	        default:
-	            System.out.println("RESPUESTA: FAILED " + idComando + " 400 COMANDO_COUNT_NO_VALIDO");
-	            pw.println("FAILED " + idComando + " 400 COMANDO_COUNT_NO_VALIDO");
-	            pw.flush();
-	            return;
-	    }
-
-	    System.out.println("RESPUESTA: OK " + idComando + " 200 " + total);
-	    pw.println("OK " + idComando + " 200 " + total);
-	    pw.flush();
-	}
-	
-	private boolean abrirDataChannel (String idComando, Socket socketDatos) {
-		try {
-			socketDatos = dataChannel.esperarConexion();
-			if(socketDatos != null) return true;
-			
-		} catch(Exception ex) {
-			System.out.println("Error de conexion de datos: " + ex.getMessage());
-	        pw.println("FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO");
-	        pw.flush();
-		}
-		
-		return false;
-	}
-	
 	
 	//  ----------------------------------------------------------- CERRAR SOCKET
 	private void cerrarConexion() {

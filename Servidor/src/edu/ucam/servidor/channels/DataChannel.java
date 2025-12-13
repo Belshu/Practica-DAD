@@ -13,7 +13,7 @@ public class DataChannel {
 	
 	public DataChannel() throws IOException {
 		this.serverSocket = new ServerSocket(ServerConfig.puertoObjetos);
-		System.out.println("Canal de datos escuchando en puerto: " + ServerConfig.puertoObjetos);
+		// System.out.println("Canal de datos escuchando en puerto: " + ServerConfig.puertoObjetos);
 	}
 	
 	public Socket esperarConexion() {
