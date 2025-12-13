@@ -19,22 +19,26 @@ public class ClientePrincipal {
 		try {
 			ClienteERP cliente = new ClienteERP();
 			
-			if(cliente.autenticar(usuario, contrasena)) { // CLIENTE AUTENTICADO 
+			
+			// ---------------------------------------------- AUTENTICAR CLIENTE
+			if(cliente.autenticar(usuario, contrasena)) { 
 				System.out.println("ADMINISTRADOR AUTENTICADO\n");
 				
 				System.out.print("(Escribe los comandos a continuacion)> ");
 				String mensaje = S.nextLine();
 				
 				
-				// ESCRIBIR COMANDOS
+				// ---------------------------------------------- ESCRIBIR COMANDOS
 				while(mensaje != null && !mensaje.equalsIgnoreCase("EXIT")) {
+					
+					// ---------------------------------------------- SI NO ESCIBRE NADA
 					if (mensaje.trim().isEmpty()) {    
 				        System.out.print("> ");
 				        mensaje = S.nextLine();
 				        continue;
 				    }
 					
-					cliente.ejecutarComando(mensaje);
+					cliente.ejecutarComando(mensaje); 
 					System.out.print("> ");
 					mensaje = S.nextLine();
 				}
@@ -45,7 +49,7 @@ public class ClientePrincipal {
 				System.out.println("Autenticación incorrecta");
 			}
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("Cliente Principal: " + ex.getMessage());
 		}
 		
 		

@@ -27,15 +27,19 @@ public class MainChannel {
 	// METODO PRINCIPAL: abrir el serversocket, el socket y el hilo (y lanzarlo)
 	public void abrirCanalComandos() {
 		try {
+			
+			// ---------------------------------------------- CONEXION ESTABLECIDA CON EL CLIENTE
 			while((socketCliente = socket.accept()) != null) {
 				System.out.println("Cliente conectado: " + socketCliente.getInetAddress().getHostAddress() 
 						+ " : " + socketCliente.getPort());
 				
+				
+				// ---------------------------------------------- CANAL DE COMANDOS 
 				hilo = new ClientChannel(socketCliente, dataManager, dataChannel);
 				hilo.start();
 			}
 		} catch (IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("abrirCanalComandos (MainChannel): " + ex.getMessage());
 		}
 	}
 }

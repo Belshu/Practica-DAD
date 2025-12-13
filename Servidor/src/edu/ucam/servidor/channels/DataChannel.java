@@ -13,9 +13,10 @@ public class DataChannel {
 	
 	public DataChannel() throws IOException {
 		this.serverSocket = new ServerSocket(ServerConfig.puertoObjetos);
-		// System.out.println("Canal de datos escuchando en puerto: " + ServerConfig.puertoObjetos);
 	}
 	
+	
+	// ---------------------------------------------- ABRIR EL SOCKET
 	public Socket esperarConexion() {
 		try {
 			return serverSocket.accept();
@@ -26,74 +27,81 @@ public class DataChannel {
 		return null;
 	}
 	
+	
+	// ---------------------------------------------- ENVIAR OBJETO
 	public boolean enviarObjeto(Socket socket, Object modelo) {
 		ObjectOutputStream oos = null;
 		
 		try {
-			oos = new ObjectOutputStream(socket.getOutputStream());
+			
+			// ---------------------------------------------- ENVIAR DESDE EL OUTPUT
+			oos = new ObjectOutputStream(socket.getOutputStream()); 
 			oos.writeObject(modelo);
 			oos.flush();
 			
 			return true;
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("enviarObjeto (DataChannel): " + ex.getMessage());
 			
 			return false;
 		} finally {
 			
-			// CERRAR OBJETO
+			// ---------------------------------------------- CERRAR OBJETO
 			if(oos != null) {
 				try {
 					oos.close();
 				} catch(IOException ex) {
-					System.out.println(ex.getMessage());
+					System.out.println("enviarObjeto (DataChannel): " + ex.getMessage());
 				}
 			}
-			
-			// CERRAR SOCKET
-			if(socket != null && !socket.isClosed()) {
-				try {
-					socket.close();
-				} catch(IOException ex) {
-					System.out.println(ex.getMessage());
-				}
-			}
+
+			cerrarSocket(socket);	
 		}
 	}
 	
+	
+	// ---------------------------------------------- RECIBIR OBJETO
 	public Object recibirObjeto(Socket socket) {
 		ObjectInputStream ois = null;
 		
 		try {
+			
+			// ---------------------------------------------- RECIBIR OBJETO DESDE EL INPUT
 			ois = new ObjectInputStream(socket.getInputStream());
-
 			return ois.readObject();
 			
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("recibirObjeto (DataChannel): " + ex.getMessage());
 		} catch(ClassNotFoundException ex) {
 			System.out.println("Error en la clase");
 		} finally {
 			
-			// CERRAR OBJETO
+			// ---------------------------------------------- CERRAR OBJETO
 			if(ois != null) {
 				try {
 					ois.close();
 				} catch(IOException ex) {
-					System.out.println(ex.getMessage());
+					System.out.println("recibirObjeto (DataChannel): " + ex.getMessage());
 				}
 			}
-			
-			// CERRAR SOCKET
-			if(socket != null && !socket.isClosed()) {
-				try {
-					socket.close();
-				} catch(IOException ex) {
-					System.out.println(ex.getMessage());
-				}
-			}			
+
+			cerrarSocket(socket);		
 		}
 		
 		return null;
+	}
+	
+	
+	// ---------------------------------------------- CERRAR SOCKET
+	public void cerrarSocket(Socket socket) {
+		if(socket == null) return;
+		
+		if(!socket.isClosed()) {
+			try {
+				socket.close();
+			} catch(IOException ex) {
+				System.out.println("cerrarSocket (DataChannel): " + ex.getMessage());
+			}
+		}
 	}
 }

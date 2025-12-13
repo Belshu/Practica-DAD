@@ -10,6 +10,7 @@ import edu.ucam.cliente.interfaces.IRepository;
 import edu.ucam.cliente.service.AuthenticationService;
 import edu.ucam.cliente.service.ChannelData;
 import edu.ucam.cliente.service.CommunicationSocket;
+import edu.ucam.cliente.service.ResponseParser;
 import edu.ucam.cliente.service.repositories.*;
 
 import edu.ucam.domain.Alumno;
@@ -49,25 +50,31 @@ public class ClienteERP {
 	}
 	
 	public void cerrarSesion() throws IOException {
+		System.out.println("CERRANDO SESION...");
 		autenticacion.cerrarSesion();
 	}
 	
+	
+	// ---------------------------------------------- GESTOR DE COMANDOS
 	public void ejecutarComando(String mensaje) {
-		if(mensaje == null) return;
 		
 		String [] partes = mensaje.trim().split(" ");
 		String comando = partes[0].toUpperCase(); // ADD, GET, COUNT...
 		
 		try {
+			
 			if(comando.startsWith("GET")) gestionarGet(comando, partes);
+			else if(comando.startsWith("COUNT")) gestionarCount(comando);
+			else if(comando.equalsIgnoreCase("SESIONES")) imprimirSesiones(mensaje);
+			else if(comando.equalsIgnoreCase("EXIT")) autenticacion.cerrarSesion();
 			else comunicacion.enviarComando(mensaje);
+		
 		} catch(IOException ex) {
-			System.out.println("ejecutarComando: " + ex.getMessage());
+			System.out.println("ejecutarComando (ClienteERP): " + ex.getMessage());
 		}
 	}
 	
 	private void gestionarGet(String comando, String [] partes) {
-		
 		try {
 			switch(comando) {
 				case "GETTIT":
@@ -75,17 +82,46 @@ public class ClienteERP {
 						Titulacion t = repositorioTitulaciones.getModel(partes[1]);
 						if(t != null) System.out.println(t.toString());
 					} else {
-						System.out.println("COMANDO INCOMPLETO");
+						System.out.println("COMANDO INCOMPLETO!\n");
 					}
 				break;
+				
+				default:
+					System.out.println("COMANDO NO RECONOCIDO\n");
 			}
 		} catch(IOException ex) {
-			System.out.println("ejecutarComando: " + ex.getMessage());
+			System.out.println("gestionarGet (ClienteERP): " + ex.getMessage());
 		} catch (ClassNotFoundException ex) {
-			System.out.println("ejecutarComando: " + ex.getMessage());
+			System.out.println("gestionarGet (ClienteERP): " + ex.getMessage());
 		}
 	}
 	
+	private void gestionarCount(String comando) {
+		switch(comando) {
+			case "COUNTTIT":
+				int total =  repositorioTitulaciones.modelSize();
+				if(total != -1) System.out.println("CANTIDAD DE TITULACIONES > " + total + "\n");
+			break;
+		}
+	}
+	
+	private void imprimirSesiones(String mensaje) {
+		try {
+			String respuesta = comunicacion.enviarComando(mensaje);
+			
+			if(respuesta == null) {
+				System.out.println("Sin respuesta por parte del servidor.\n");
+				return;
+			}
+			
+			ResponseParser parser = new ResponseParser(respuesta);
+			if(parser.isOK()) System.out.println("SESIONES ACTIVAS > " + parser.getMessage());
+			
+		} catch (IOException e) {
+			System.out.println("imprimirSesiones (ClienteERP): " + e.getMessage());
+		}
+		
+	}
 	
 	// ---------------------------------------------- GETTERS
 	public ICommunicationServer getComunicacion() {

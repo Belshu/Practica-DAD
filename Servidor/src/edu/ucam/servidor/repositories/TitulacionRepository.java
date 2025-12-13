@@ -31,6 +31,11 @@ public class TitulacionRepository {
 	}
 	
 	public synchronized boolean remove(String id) {
-		return false;
+		Titulacion t = get(id);
+		
+		if(t == null) return false;
+		else titulaciones.remove(t);
+		
+		return true;
 	}
 }

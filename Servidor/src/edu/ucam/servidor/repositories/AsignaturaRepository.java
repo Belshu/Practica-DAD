@@ -3,28 +3,36 @@ package edu.ucam.servidor.repositories;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.ucam.domain.Titulacion;
+import edu.ucam.domain.Asignatura;
 
 public class AsignaturaRepository {
-	private final List <Titulacion> asignaturas = new ArrayList<>();
+	private final List <Asignatura> asignaturas = new ArrayList<>();
 	
 	public synchronized int count() {
 		return asignaturas.size();
 	}
 	
-	public synchronized void add(Titulacion t) {
-		asignaturas.add(t);
+	public synchronized void add(Asignatura a) {
+		asignaturas.add(a);
 	}
 	
-	public synchronized Titulacion get(String id) {
+	public synchronized Asignatura get(String id) {
+		for(Asignatura a : asignaturas)
+			if(a.getId().equals(id)) return a;
+		
 		return null;
 	}
 	
-	public synchronized List <Titulacion> list() {
+	public synchronized List <Asignatura> list() {
 		return asignaturas;
 	}
 	
 	public synchronized boolean remove(String id) {
-		return false;
+		Asignatura a = get(id);
+		
+		if(a == null) return false;
+		else asignaturas.remove(a);
+		
+		return true;
 	}
 }

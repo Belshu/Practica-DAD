@@ -17,6 +17,8 @@ public class CommunicationSocket implements ICommunicationServer{
 	private PrintWriter pw;
 	private boolean estado;
 
+	
+	// ---------------------------------------------- CONECTAR CON EL SERVIDOR
 	@Override
 	public void connectar() {
 		try {
@@ -25,56 +27,76 @@ public class CommunicationSocket implements ICommunicationServer{
 			pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
 			
 			
-			// Mensaje de bienvenida del servidor
+			// ---------------------------------------------- MENSAJE DE BIENVENIDA
 			System.out.println(recibirRespuesta());
 			
 			estado = true;
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("conectar (CommunicationSocket): " + ex.getMessage());
 		}
 	}
 	
+	
+	// ---------------------------------------------- CERRAR SOCKET 
 	@Override
 	public void desconectar(){
+		if(socket == null) return;
+		
 		try {
 			if(socket.isConnected()) {
 				socket.close();
 				estado = false;
+				
+				System.out.println("CONEXION CERRADA!");
 			}
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("conectar (CommunicationSocket): " + ex.getMessage());
 		}
 	}
 	
+	
+	// ---------------------------------------------- ENVIAR COMANDO AL SERVIDOR
 	@Override
 	public String enviarComando(String comando){
+		if(pw == null) return null;
+		
 		if(comando == null || comando.trim().isEmpty()) return null;
 		
 		pw.println(idComunicacion + " " + comando);
 		pw.flush();
 		
 		idComunicacion++;
+		
+		// ---------------------------------------------- RECIBIR LA RESPUESTA
 		String respuesta = recibirRespuesta();
 		
+		/*
 		if(respuesta != null) System.out.println(respuesta + "\n");
 		else System.out.println("Ninguna respuesta por parte del servidor.");
+		*/
 		
 		return respuesta;
 	}
 	
-	@Override
-	public boolean isVivo() {
-		return estado;
-	}
 	
+	// ---------------------------------------------- RECIBIR RESPUESTA DEL SERVIDOR
 	@Override
 	public String recibirRespuesta(){
+		if(br == null) return null;
+		
 		try {
 			return br.readLine();
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("recibirRespuesta (CommunicationSocket): " + ex.getMessage());
 		}
 		
 		return null;
+	}
+	
+	
+	
+	@Override
+	public boolean isVivo() {
+		return estado;
 	}
 }

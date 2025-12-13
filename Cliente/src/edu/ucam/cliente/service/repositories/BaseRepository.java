@@ -55,6 +55,7 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 		
 		if(respuesta == null) {
 			System.out.println("Sin respuesta por parte del servidor: " + getComando);
+			return null;
 		}
 		
 		ResponseParser parser = new ResponseParser(respuesta);
@@ -75,6 +76,10 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 			 System.out.println("No llegó el OK final tras PREOK");
 			 return null;
 		}
+		else if(parser.isFAILED()) {
+			if(parser.getMessage().equals("OBJETO_NO_ENCONTRADO")) System.out.println("NO SE HA ENCONTADO EL OBJETO PEDIDO\n");
+			else System.out.println("ERROR INESPERADO\n");
+		}
 		
 		return null;
 	}
@@ -83,6 +88,12 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 	public int modelSize() {
 		try {
 			String respuestaServidor = comunicacion.enviarComando(countComando);
+			
+			if(respuestaServidor == null) {
+				System.out.println("ERROR EN LA RESPUESTA DEL SERVIDOR\n");
+				return -1;
+			}
+			
 			ResponseParser parser = new ResponseParser(respuestaServidor);
 			
 			if(parser.isOK()) {

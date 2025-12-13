@@ -12,6 +12,8 @@ public class AuthenticationService implements IAuthentication{
 		this.communication = communication;
 	} 
 
+	
+	// ---------------------------------------------- BASADO EN LO RESPONDIDO AL INICIO
 	@Override
 	public boolean autenticar(String usuario, String contrasena){
 		try {
@@ -32,13 +34,15 @@ public class AuthenticationService implements IAuthentication{
 		return false;
 	}
 
+	
+	// ---------------------------------------------- CERRAR CONEXION CON EL SERVIDOR
 	@Override
 	public void cerrarSesion(){
 		try {
 			communication.enviarComando("EXIT");
 			communication.desconectar();
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("cerrarSesion (AuthenticationService): " + ex.getMessage());
 		}
 	}
 }

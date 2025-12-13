@@ -14,6 +14,8 @@ public class GetHandler implements ICommandHandler{
 	private DataChannel dataChannel;
 	private Titulacion t;
 	
+	
+	// ---------------------------------------------- CONSTRUCTOR
 	public GetHandler(ERPDataManager data, DataChannel dataChannel) {
 		this.data = data;
 		this.dataChannel = dataChannel;
@@ -34,13 +36,15 @@ public class GetHandler implements ICommandHandler{
 				return t = data.getTitulacionRepository().get(id);
 				
 			case "GETASIG":
-				return data.getAluRepository().get(id);
+				return data.getAsigRepository().get(id);
 				
 			default:
 				return null;
 		}
 	}
 
+	
+	// ---------------------------------------------- ENVIAR OBJETO AL CLIENTE
 	public String responderGet(String idComando, Object obj, String msgOk) {
 		Socket socketDatos = dataChannel.esperarConexion();
 		if(socketDatos == null) return "FAILED " + idComando + " 500 ERROR_CONEXION_DATOS";

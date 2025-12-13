@@ -24,13 +24,14 @@ public class ClientChannel extends Thread{
 	private final ERPDataManager data;
 	private final DataChannel dataChannel;
 	
-	// HANDLERS
+	
+	// ---------------------------------------------- HANDLERS
 	private final GetHandler getHandler;
 	private final CountHandler countHandler;
 	
 	
 	
-	// CONSTRUCTOR: tener referencia del socket creado
+	// ---------------------------------------------- CONSTRUCTOR
 	public ClientChannel(Socket socketCliente, ERPDataManager data, DataChannel dataChannel) {
 		this.socketCliente = socketCliente;
 		this.data = data;
@@ -49,7 +50,7 @@ public class ClientChannel extends Thread{
 			}
 			
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			System.out.println("CONSTRUCTOR (ClienteChannel): " + e.getMessage());
 		}
 	}
 	
@@ -96,6 +97,8 @@ public class ClientChannel extends Thread{
 	private void gestionarComandos(String comandoCompleto) {
 		String [] partes = comandoCompleto.trim().split(" ");
 		
+		
+		// ---------------------------------------------- MINIMO "idComando" & "comando"
 		if(partes.length < 2) {
 			System.out.println("RESPUESTA: FAILED 0 400 comando_no_valido");
 			pw.println("FAILED 0 400 comando_no_valido");
@@ -103,20 +106,20 @@ public class ClientChannel extends Thread{
 			return;
 		}
 		
+		
 		String idComando = partes[0], comando = partes[1].toUpperCase();
 		
-		// if (comando.startsWith("ADD")) gestionarAdd(idComando, partes);
-		// else 
-		if(comando.startsWith("GET")) {
-			if(!nombreCorrecto || !contrasenaCorrecta) {
-				System.out.println("RESPUESTA FAILED " + idComando + " 403 NO_AUTORIZADO");
-				pw.println("FAILED " + idComando + " 403 NO_AUTORIZADO");
-				pw.flush();
-				return;
-			}
-
-			Object obj = getHandler.handle(idComando, partes);
+		if (comando.startsWith("ADD")) {
+			if(!autenticado(idComando)) return; // ---------------------------------------------- SI NO ESTÁ AUTENTICADO
 			
+			
+		}
+		else if(comando.startsWith("GET")) {
+			if(!autenticado(idComando)) return; // ---------------------------------------------- SI NO ESTÁ AUTENTICADO
+
+			
+			// ---------------------------------------------- GET OBJETO CORRESPONDIENTE
+			Object obj = getHandler.handle(idComando, partes);
 			if(obj == null) {
 				System.out.println("RESPUESTA: FAILED " + idComando + " 404 OBJETO_NO_ENCONTRADO");
 		        pw.println("FAILED " + idComando + " 404 OBJETO_NO_ENCONTRADO");
@@ -125,28 +128,28 @@ public class ClientChannel extends Thread{
 			}
 			
 			
-			// PREOK
+			// ---------------------------------------------- ENVIAR PREOK
 		    pw.println("PREOK " + idComando + " 200 " + socketCliente.getLocalAddress().getHostAddress() + " " + ServerConfig.puertoObjetos);
 		    pw.flush();
 		    
+		    
+		    // ---------------------------------------------- RESPUESTA DEL HANDLER
 		    String respuesta = getHandler.responderGet(idComando, obj, "TITULACION_ENVIADA");
 		    pw.println(respuesta);
 			pw.flush();
 		}
 		else if(comando.startsWith("COUNT")) {
-			if(!nombreCorrecto || !contrasenaCorrecta) {
-				System.out.println("RESPUESTA FAILED " + idComando + " 403 NO_AUTORIZADO");
-				pw.println("FAILED " + idComando + " 403 NO_AUTORIZADO");
-				pw.flush();
-				return;
-			}
+			if(!autenticado(idComando)) return; // ---------------------------------------------- SI NO ESTÁ AUTENTICADO
 			
+			// ---------------------------------------------- RESPUESTA DEL HANDLER
 			String respuesta = (String) countHandler.handle(idComando, partes);
-			
 			pw.println(respuesta);
 			pw.flush();
 		}
+		else if(comando.equals("USER") || comando.equals("PASS")) autenticar(idComando, comando, partes); // AUTENTICACION DE USUARIO
 		else {
+			
+			// ----------------------------------------------------------- SESIONES & EXIT
 			switch(comando) {
 			
 				// [idComando] SESIONES = OK [idComando] [cod_respuesta] [num_sesiones] SESIONES_ACTIVAS
@@ -161,55 +164,7 @@ public class ClientChannel extends Thread{
 					pw.println("OK " + idComando + " 200 " + total + " SESIONES_ACTIVAS");
 				break;
 				
-				// ----------------------------------------------------------- AUTENTICAR USUARIO
-				case "USER":
-					if(partes.length != 3) {
-						System.out.println("RESPUESTA: FAILED " + idComando + " 400 FALTA_NOMBRE");
-						pw.println("FAILED " + idComando + " 400 FALTA_NOMBRE");
-					} else {
-						String nombre = partes[2];
-						
-						if(ServerConfig.nombre.equals(nombre)) {
-							nombreCorrecto = true;
-							System.out.println("RESPUESTA: OK " + idComando + " 200 NOMBRE_OK");
-							pw.println("OK " + idComando + " 200 NOMBRE_OK");
-						} else {
-							nombreCorrecto = false;
-							System.out.println("RESPUESTA: FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
-							pw.println("FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
-						}
-					}
-				break;
-				
-				// ----------------------------------------------------------- AUTENTICAR CONTRASEÑA
-				case "PASS":
-					if(partes.length != 3) {
-						System.out.println("RESPUESTA: FAILED " + idComando + " 402 FALTA_CONTRASEÑA");
-						pw.println("FAILED " + idComando + " 402 FALTA_CONTRASEÑA");
-					} else {
-						String contrasena = partes[2];
-						if(nombreCorrecto) {
-							if(ServerConfig.contrasena.equals(contrasena)) {
-								contrasenaCorrecta = true;
-								
-								System.out.println("RESPUESTA: OK " + idComando + " 200 CONTRASEÑA_OK");
-								pw.println("OK " + idComando + " 200 CONTRASEÑA_OK");
-							} else {
-								contrasenaCorrecta = false;
-								
-								System.out.println("RESPUESTA: FAILED " + idComando + 
-										" 401 CONTRASEÑA_INCORRECTA");
-								pw.println("FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
-							}
-						} else {
-							System.out.println("RESPUESTA: FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
-							pw.println("FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
-						}
-					}
-				break;
-				
-				
-				// SALIR DEL PROGRAMA
+				// ----------------------------------------------------------- SALIR DEL PROGRAMA
 				case "EXIT":
 					pw.println("OK " + idComando + " 200 CERRANDO_CONEXIÓN...");
 					cerrarConexion();
@@ -223,6 +178,80 @@ public class ClientChannel extends Thread{
 		}
 	}
 	
+	
+	// ----------------------------------------------------------- AUTENTICAR USUARIO
+	private void autenticar(String idComando, String comando, String [] partes) {
+		switch(comando) {
+		
+		// ----------------------------------------------------------- AUTENTICAR NOMBRE DE USUARIO
+		case "USER":
+			if(partes.length != 3) {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 400 FALTA_NOMBRE");
+				pw.println("FAILED " + idComando + " 400 FALTA_NOMBRE");
+			} else {
+				String nombre = partes[2];
+				
+				if(ServerConfig.nombre.equals(nombre)) {
+					nombreCorrecto = true;
+					System.out.println("RESPUESTA: OK " + idComando + " 200 NOMBRE_OK");
+					pw.println("OK " + idComando + " 200 NOMBRE_OK");
+				} else {
+					nombreCorrecto = false;
+					System.out.println("RESPUESTA: FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
+					pw.println("FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
+				}
+			}
+		break;
+		
+		// ----------------------------------------------------------- AUTENTICAR CONTRASEÑA DE USUARIO
+		case "PASS":
+			if(partes.length != 3) {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 402 FALTA_CONTRASEÑA");
+				pw.println("FAILED " + idComando + " 402 FALTA_CONTRASEÑA");
+			} else {
+				String contrasena = partes[2];
+				if(nombreCorrecto) {
+					if(ServerConfig.contrasena.equals(contrasena)) {
+						contrasenaCorrecta = true;
+						
+						System.out.println("RESPUESTA: OK " + idComando + " 200 CONTRASEÑA_OK");
+						pw.println("OK " + idComando + " 200 CONTRASEÑA_OK");
+					} else {
+						contrasenaCorrecta = false;
+						
+						System.out.println("RESPUESTA: FAILED " + idComando + 
+								" 401 CONTRASEÑA_INCORRECTA");
+						pw.println("FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
+					}
+				} else {
+					System.out.println("RESPUESTA: FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
+					pw.println("FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
+				}
+			}
+		break;
+		
+		default:
+			pw.println("FAILED " + idComando + " 400 COMANDO_NO_EXISTENTE");
+	}
+	
+	pw.flush();
+	}
+	
+	
+	// ---------------------------------------------- SI ESTÁ O NO AUTENTICADO
+	private boolean autenticado(String idComando) {
+		if(!nombreCorrecto || !contrasenaCorrecta) {
+			System.out.println("RESPUESTA FAILED " + idComando + " 403 NO_AUTORIZADO");
+			pw.println("FAILED " + idComando + " 403 NO_AUTORIZADO");
+			pw.flush();
+			
+			return false;
+		}
+		
+		return true;
+	}
+	
+	
 	//  ----------------------------------------------------------- CERRAR SOCKET
 	private void cerrarConexion() {
 		try {
@@ -233,7 +262,7 @@ public class ClientChannel extends Thread{
 			}
 			
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("cerrarConexion (ClientChannel): " + ex.getMessage());
 		}
 	}
 }

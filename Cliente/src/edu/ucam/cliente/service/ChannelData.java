@@ -8,6 +8,8 @@ import java.net.Socket;
 import edu.ucam.cliente.interfaces.IChannelData;
 
 public class ChannelData implements IChannelData{
+	
+	// ---------------------------------------------- ENVIAR OBJETO
 	@Override
 	public void enviarObjeto(String ip, String puerto, Object modelo) {
 		Socket socket = null;
@@ -17,14 +19,16 @@ public class ChannelData implements IChannelData{
 			int p = Integer.parseInt(puerto);
 			socket = new Socket(ip, p);
 			
+			
+			// ---------------------------------------------- ENVIAR MEDIANTE EL OUTPUT
 			oos = new ObjectOutputStream(socket.getOutputStream());
 			oos.writeObject(modelo);
 			oos.flush();
 			
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("enviarObjeto (ChannelData): " + ex.getMessage());
 		} catch(Exception ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("enviarObjeto (ChannelData): " + ex.getMessage());
 		} finally {
 			
 			// ---------------------------------------------- CERRAR OBJETO
@@ -32,7 +36,7 @@ public class ChannelData implements IChannelData{
 				try {
 					oos.close();
 				} catch(IOException ex) {
-					System.out.println(ex.getMessage());
+					System.out.println("enviarObjeto (ChannelData): " + ex.getMessage());
 				}
 			}
 			
@@ -41,7 +45,7 @@ public class ChannelData implements IChannelData{
 				try {
 					socket.close();
 				} catch(IOException ex) {
-					System.out.println(ex.getMessage());
+					System.out.println("enviarObjeto (ChannelData): " + ex.getMessage());
 				}
 			}
 		}
@@ -56,14 +60,14 @@ public class ChannelData implements IChannelData{
 			int p = Integer.parseInt(puerto);
 			socket = new Socket(ip, p);
 			
+			// ---------------------------------------------- RECIBIR MEDIANTE EL INPUT
 			ois = new ObjectInputStream(socket.getInputStream());
-			
 			return ois.readObject();
 			
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("recibirObjeto (ChannelData): " + ex.getMessage());
 		} catch(ClassNotFoundException ex) {
-			System.out.println("Problema con la clase recibida: " + ex.getMessage());
+			System.out.println("recibirObjeto (ChannelData): " + ex.getMessage());
 		} finally {
 			
 			// ---------------------------------------------- CERRAR OBJETO
@@ -71,7 +75,7 @@ public class ChannelData implements IChannelData{
 				try {
 					ois.close();
 				} catch(IOException ex) {
-					System.out.println(ex.getMessage());
+					System.out.println("recibirObjeto (ChannelData): " +ex.getMessage());
 				}
 			}
 			
@@ -80,7 +84,7 @@ public class ChannelData implements IChannelData{
 				try {
 					socket.close();
 				} catch(IOException ex) {
-					System.out.println(ex.getMessage());
+					System.out.println("recibirObjeto (ChannelData): " +ex.getMessage());
 				}
 			}			
 		}
