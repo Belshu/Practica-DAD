@@ -90,7 +90,7 @@ public class ClienteERP {
 			switch(comando) {
 				case "ADDTIT":
 					Titulacion t = repositorioTitulaciones.crearObjeto(S, idObjeto);
-					System.out.println(repositorioTitulaciones.sendModel(idObjeto, t) + "\n");
+					System.out.println(repositorioTitulaciones.add(idObjeto, t) + "\n");
 				break;
 				
 				default:
@@ -155,10 +155,5 @@ public class ClienteERP {
 			System.out.println("imprimirSesiones (ClienteERP): " + e.getMessage());
 		}
 		
-	}
-	
-	// ---------------------------------------------- GETTERS
-	public ICommunicationServer getComunicacion() {
-		return comunicacion;
 	}
 }

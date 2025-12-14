@@ -25,9 +25,31 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 	}
 
 	@Override
-	public void add(T modelo) throws IOException, ClassNotFoundException {
-		// TODO Auto-generated method stub
+	public String add(String idObjeto,T modelo) {
+		try {
+			String respuesta = comunicacion.enviarComando(addComando + " " + idObjeto);
+			
+			if(respuesta == null) {
+				return "Sin respuesta por parte del servidor: " + addComando;
+			}
+						
+			ResponseParser parser = new ResponseParser(respuesta);
+			if(parser.isPREOK()) {
+				Object obj = modelo;
+				channelData.enviarObjeto(parser.getIp(), parser.getPort(), obj);
+				
+				String respuesta2 = comunicacion.recibirRespuesta();
+				if(respuesta2 != null) {
+					ResponseParser parser2 = new ResponseParser(respuesta2);
+					
+					if(parser2.isOK()) return "OBJETO ENVIADO CON EXITO!";
+				}
+			} else if(parser.isFAILED()) return "ERROR: " + parser.getMessage();
+		} catch (IOException e) {
+			System.out.println("add (BaseRepository): " + e.getMessage());
+		}
 		
+		return "NO SE PUDO ENVIAR EL OBJETO";
 	}
 
 	@Override
@@ -80,43 +102,13 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 				 return null;
 			}
 			else if(parser.isFAILED()) {
-				if(parser.getMessage().equals("OBJETO_NO_ENCONTRADO")) System.out.println("NO SE HA ENCONTADO EL OBJETO PEDIDO\n");
-				else System.out.println("ERROR INESPERADO\n");
+				System.out.println("ERROR: " + parser.getMessage());
 			}
 		} catch(IOException ex) {
 			System.out.println("getModel (BaseRepository): " + ex.getMessage());
 		}
 		
 		return null;
-	}
-	
-	@Override
-	public String sendModel(String idObjeto, Object model) {
-		try {
-			String respuesta = comunicacion.enviarComando(addComando + " " + idObjeto);
-			
-			if(respuesta == null) {
-				return "Sin respuesta por parte del servidor: " + addComando;
-			}
-						
-			ResponseParser parser = new ResponseParser(respuesta);
-			if(parser.isPREOK()) {
-				channelData.enviarObjeto(parser.getIp(), parser.getPort(), model);
-				
-				String respuesta2 = comunicacion.recibirRespuesta();
-				if(respuesta2 != null) {
-					ResponseParser parser2 = new ResponseParser(respuesta2);
-					
-					if(parser2.isOK()) return "OBJETO ENVIADO CON EXITO!";
-				}
-			} else if(parser.isFAILED()) {
-				return "ERROR EN EL ENVIO DEL OBJETO";
-			}
-		} catch (IOException e) {
-			System.out.println("sendModel (BaseRepository): " + e.getMessage());
-		}
-		
-		return "NO SE PUDO ENVIAR EL OBJETO";
 	}
 
 	@Override
@@ -145,9 +137,7 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 					return -1;
 				}
 			} else {
-				System.out.println("Error en " + countComando 
-		                + " | código: " + parser.getCodigo()
-		                + " | mensaje: " + parser.getMessage());
+				System.out.println("ERROR: " + parser.getMessage());
 		            return -1;
 			}
 			

@@ -15,6 +15,7 @@ public class TituRepository extends BaseRepository <Titulacion>{
 				"ADDTIT", "REMOVETIT", "GETTIT", "LISTTIT", "COUNTTIT", "UPDATETIT");
 	}
 	
+	@Override
 	public Titulacion crearObjeto(Scanner S, String idObjeto) {
 		String nombre;
 		
