@@ -1,6 +1,7 @@
 package edu.ucam.cliente;
 
 import java.io.IOException;
+import java.util.Scanner;
 
 import edu.ucam.cliente.interfaces.IAuthentication;
 import edu.ucam.cliente.interfaces.IChannelData;
@@ -27,13 +28,14 @@ public class ClienteERP {
 	private final IRepository<Alumno> repositorioAlumnos;
 	
 	
-	// CONEXIÓN DEL SOCKET CON EL SERVIDOR, CONECTAR Y AUTENTICACIÓN
+	// ---------------------------------------------- CONEXIÓN SOCKET CON SERVIDOR Y AUTENTICAR
 	public ClienteERP() throws IOException{
 		this.comunicacion = new CommunicationSocket();
 		this.comunicacion.connectar();
 	
 		IChannelData channelData = new ChannelData();
 		this.autenticacion = new AuthenticationService(this.comunicacion);
+		
 		
 		// ---------------------------------------------- REPOSITORIOS
 		this.repositorioAsignaturas = new SubjectRepository(comunicacion, channelData);
@@ -62,8 +64,8 @@ public class ClienteERP {
 		String comando = partes[0].toUpperCase(); // ADD, GET, COUNT...
 		
 		try {
-			
-			if(comando.startsWith("GET")) gestionarGet(comando, partes);
+			if(comando.startsWith("ADD")) gestionarAdd(comando, partes);
+			else if(comando.startsWith("GET")) gestionarGet(comando, partes);
 			else if(comando.startsWith("COUNT")) gestionarCount(comando);
 			else if(comando.equalsIgnoreCase("SESIONES")) imprimirSesiones(mensaje);
 			else if(comando.equalsIgnoreCase("EXIT")) autenticacion.cerrarSesion();
@@ -74,16 +76,44 @@ public class ClienteERP {
 		}
 	}
 	
+	// ---------------------------------------------- GESTOR DEL COMANDO ADD
+	private void gestionarAdd(String comando, String [] partes) {
+		Scanner S = new Scanner(System.in);
+		
+		if(partes.length < 2) {
+			System.out.println("COMANDO INCOMPLETO!\n");
+			return;
+		}
+		
+		String idObjeto = partes[1];
+		try {
+			switch(comando) {
+				case "ADDTIT":
+					Titulacion t = repositorioTitulaciones.crearObjeto(S, idObjeto);
+					System.out.println(repositorioTitulaciones.sendModel(idObjeto, t) + "\n");
+				break;
+				
+				default:
+					System.out.println("COMANDO NO RECONOCIDO\n");
+			}
+		} catch(Exception ex) {
+			System.out.println("gestionarAdd (ClienteERP): " + ex.getMessage());
+		}
+	}
+	
+	// ---------------------------------------------- GESTOR DEL COMANDO GET
 	private void gestionarGet(String comando, String [] partes) {
+		
+		if(partes.length < 2) {
+			System.out.println("COMANDO INCOMPLETO!\n");
+			return;
+		}
+		
 		try {
 			switch(comando) {
 				case "GETTIT":
-					if(partes.length >= 2) {
-						Titulacion t = repositorioTitulaciones.getModel(partes[1]);
-						if(t != null) System.out.println(t.toString());
-					} else {
-						System.out.println("COMANDO INCOMPLETO!\n");
-					}
+					Titulacion t = repositorioTitulaciones.getModel(partes[1]);
+					if(t != null) System.out.println(">> ID: " + t.getId() + "\t>> NOMBRE: " + t.getNombre() + "\n");
 				break;
 				
 				default:
@@ -96,15 +126,19 @@ public class ClienteERP {
 		}
 	}
 	
+	// ---------------------------------------------- GESTOR DEL COMANDO COUNT
 	private void gestionarCount(String comando) {
+		int total = -1;
+		
 		switch(comando) {
 			case "COUNTTIT":
-				int total =  repositorioTitulaciones.modelSize();
-				if(total != -1) System.out.println("CANTIDAD DE TITULACIONES > " + total + "\n");
+				total =  repositorioTitulaciones.modelSize();
+				if(total != -1) System.out.println("CANTIDAD DE TITULACIONES -> " + total + "\n");
 			break;
 		}
 	}
 	
+	// ---------------------------------------------- GESTOR DEL COMANDO SESIONES
 	private void imprimirSesiones(String mensaje) {
 		try {
 			String respuesta = comunicacion.enviarComando(mensaje);
@@ -115,7 +149,7 @@ public class ClienteERP {
 			}
 			
 			ResponseParser parser = new ResponseParser(respuesta);
-			if(parser.isOK()) System.out.println("SESIONES ACTIVAS > " + parser.getMessage());
+			if(parser.isOK()) System.out.println("SESIONES ACTIVAS -> " + parser.getMessage() + "\n");
 			
 		} catch (IOException e) {
 			System.out.println("imprimirSesiones (ClienteERP): " + e.getMessage());

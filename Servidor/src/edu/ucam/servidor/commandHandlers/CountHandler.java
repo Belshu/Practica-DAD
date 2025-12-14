@@ -6,12 +6,15 @@ import edu.ucam.servidor.repositories.ERPDataManager;
 public class CountHandler implements ICommandHandler{
 	private ERPDataManager data;
 	
+	
+	// ---------------------------------------------- CONSTRUCTOR
 	public CountHandler(ERPDataManager data) {
 		this.data = data;
 	}
 
 	// partes [0] = idComando;
 	// partes [1] = COUNTTIT
+	
 	@Override
 	public Object handle(String idComando, String[] partes) {
 		int total = -1;

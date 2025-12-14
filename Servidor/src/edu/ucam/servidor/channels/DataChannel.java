@@ -9,19 +9,41 @@ import java.net.Socket;
 import edu.ucam.servidor.config.ServerConfig;
 
 public class DataChannel {
-	private final ServerSocket serverSocket;
-	
-	public DataChannel() throws IOException {
-		this.serverSocket = new ServerSocket(ServerConfig.puertoObjetos);
-	}
+	private ServerSocket serverSocket;
 	
 	
 	// ---------------------------------------------- ABRIR EL SOCKET
+	public int puertoLocal() {
+		cerrarServerSocket();
+			
+		// ---------------------------------------------- EVITAR QUE EL PUERTO DEL SERVERSOCKET SEA EL DE COMANDOS
+		int puerto = ServerConfig.puertoComandos;
+		try {
+			do {
+				
+				this.serverSocket = new ServerSocket(0);
+				puerto = this.serverSocket.getLocalPort();
+				
+				if(puerto == ServerConfig.puertoComandos) {
+					this.serverSocket.close();
+					 this.serverSocket = null;
+				}
+				
+			} while(serverSocket == null);
+			
+			return puerto;
+		} catch(IOException ex) {
+			System.out.println("puertoLocal (DataChannel): " + ex.getMessage());
+			return -1;
+		}
+	}
+	
+	
 	public Socket esperarConexion() {
 		try {
 			return serverSocket.accept();
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("esperarConexion (DataChannel): " + ex.getMessage());
 		}
 		
 		return null;
@@ -56,6 +78,7 @@ public class DataChannel {
 			}
 
 			cerrarSocket(socket);	
+			cerrarServerSocket();
 		}
 	}
 	
@@ -86,6 +109,7 @@ public class DataChannel {
 			}
 
 			cerrarSocket(socket);		
+			cerrarServerSocket();
 		}
 		
 		return null;
@@ -103,5 +127,16 @@ public class DataChannel {
 				System.out.println("cerrarSocket (DataChannel): " + ex.getMessage());
 			}
 		}
+	}
+	
+	public void cerrarServerSocket() {
+		if(serverSocket != null)
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				System.out.println("cerrarServerSocket (DataChannel): " + e.getMessage());
+			} finally {
+				serverSocket = null;
+			}
 	}
 }

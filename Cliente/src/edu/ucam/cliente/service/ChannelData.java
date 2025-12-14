@@ -22,7 +22,7 @@ public class ChannelData implements IChannelData{
 			
 			// ---------------------------------------------- ENVIAR MEDIANTE EL OUTPUT
 			oos = new ObjectOutputStream(socket.getOutputStream());
-			oos.writeObject(modelo);
+			oos.writeObject(modelo); 
 			oos.flush();
 			
 		} catch(IOException ex) {

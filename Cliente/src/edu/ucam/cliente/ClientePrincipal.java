@@ -53,7 +53,7 @@ public class ClientePrincipal {
 		}
 		
 		
-		System.out.println("FIN DE LA APLICACIÓN");
+		System.out.println("\nFIN DE LA APLICACIÓN");
 		S.close();
 	}
 }

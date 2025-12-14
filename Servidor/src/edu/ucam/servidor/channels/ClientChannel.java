@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import edu.ucam.domain.Titulacion;
+import edu.ucam.servidor.commandHandlers.AddHandler;
 import edu.ucam.servidor.commandHandlers.CountHandler;
 import edu.ucam.servidor.commandHandlers.GetHandler;
 import edu.ucam.servidor.config.ServerConfig;
@@ -18,9 +19,12 @@ public class ClientChannel extends Thread{
 	private BufferedReader br;
 	private PrintWriter pw;
 	
-	private static int sesiones = 0;
-	private boolean nombreCorrecto = false, contrasenaCorrecta = false;
-	private static final Object candado = new Object();
+	private static int sesiones = 0; // NUMERO DE SESIONES
+	private boolean nombreCorrecto = false, contrasenaCorrecta = false, cerrado = true;
+	private static final Object candado = new Object(); // SINCRONIZAR NUMERO DE SESIONES DE CADA HILO
+	
+	
+	// ---------------------------------------------- MANEJO DE DATOS Y CANAL DE OBJETOS PARA ENVIAR/RECIBIR
 	private final ERPDataManager data;
 	private final DataChannel dataChannel;
 	
@@ -32,14 +36,13 @@ public class ClientChannel extends Thread{
 	
 	
 	// ---------------------------------------------- CONSTRUCTOR
-	public ClientChannel(Socket socketCliente, ERPDataManager data, DataChannel dataChannel) {
+	public ClientChannel(Socket socketCliente, ERPDataManager data) {
 		this.socketCliente = socketCliente;
 		this.data = data;
-		this.dataChannel = dataChannel;
+		this.dataChannel = new DataChannel();
 		
 		this.getHandler = new GetHandler(data, dataChannel);
 		this.countHandler = new CountHandler(data);
-		
 		
 		try {
 			br = new BufferedReader(new InputStreamReader(socketCliente.getInputStream()));
@@ -49,24 +52,23 @@ public class ClientChannel extends Thread{
 				sesiones++;
 			}
 			
+			cerrado = false;
 		} catch (IOException e) {
 			System.out.println("CONSTRUCTOR (ClienteChannel): " + e.getMessage());
 		}
 	}
 	
 	
-	// Inicializar el BufferedReader/PrintWriter, lanzar el mensaje de bienvenida 
-	// y leer todos los mensajes recibidos por el cliente
+	// ---------------------------------------------- LANZAR HILO
 	@Override
 	public void run() {
 		try {
-			pw.println("OK 0 200 Bienvenido!");
+			pw.println("OK 0 200 Bienvenido!"); // mensaje de bienvenida
 			pw.flush();
-			
-			String mensaje = null;
 			
 			
 			//  ----------------------------------------------------------- AUTENTICAR NOMBRE DE USUARIO
+			String mensaje = null;
 			mensaje = br.readLine();
 			System.out.println("\nNombre del cliente: " + mensaje);
 			gestionarComandos(mensaje);
@@ -88,17 +90,17 @@ public class ClientChannel extends Thread{
 			System.out.println("Conexion cerrada con el cliente " + socketCliente.getInetAddress().getHostAddress() 
 					+ " : " + socketCliente.getPort() + " (" + ex.getMessage() + ")");
 		} finally {
-			cerrarConexion();
+			if(!cerrado) cerrarConexion();
 		}
 	}
 	
 	
-//  ----------------------------------------------------------- GESTIONAR COMANDOS
+	// ----------------------------------------------------------- GESTIONAR COMANDOS
 	private void gestionarComandos(String comandoCompleto) {
 		String [] partes = comandoCompleto.trim().split(" ");
 		
 		
-		// ---------------------------------------------- MINIMO "idComando" & "comando"
+		// ---------------------------------------------- MINIMO [ ID_COMANDO ]  & [ COMANDO ] 
 		if(partes.length < 2) {
 			System.out.println("RESPUESTA: FAILED 0 400 comando_no_valido");
 			pw.println("FAILED 0 400 comando_no_valido");
@@ -109,13 +111,44 @@ public class ClientChannel extends Thread{
 		
 		String idComando = partes[0], comando = partes[1].toUpperCase();
 		
-		if (comando.startsWith("ADD")) {
-			if(!autenticado(idComando)) return; // ---------------------------------------------- SI NO ESTÁ AUTENTICADO
+		if (comando.startsWith("ADD")) { // ---------------------------------------------- [ ADD ] 
+			if(!autenticado(idComando)) return; 
+			
+			// ---------------------------------------------- ENVIAR PREOK
+			int puertoDatos = dataChannel.puertoLocal();
+			if(puertoDatos == -1) {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 405 FALLO_ESTABLECIENDO_PUERTO");
+			       pw.println("FAILED " + idComando + " 405 FALLO_ESTABLECIENDO_PUERTO");
+			       pw.flush();
+			       return;
+			}
+			pw.println("PREOK " + idComando + " 200 " + socketCliente.getLocalAddress().getHostAddress() + " " + puertoDatos);
+			pw.flush();
+				    
+			Socket ss = dataChannel.esperarConexion();
+			if(ss == null) {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 405 FALLO_CONEXION_SOCKET");
+				pw.println("FAILED " + idComando + " 405 FALLO_CONEXION_SOCKET");
+				pw.flush();
+				return;
+			}
 			
 			
+			Object obj = dataChannel.recibirObjeto(ss);
+			if(obj == null) {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 404 OBJETO_NO_RECIBIDO");
+		        pw.println("FAILED " + idComando + " 404 OBJETO_NO_RECIBIDO");
+		        pw.flush();
+		        return;
+			}
+			AddHandler addHandler = new AddHandler(data);
+			addHandler.setModel(obj);
+			String respuesta = (String) addHandler.handle(idComando, partes);
+			pw.println(respuesta);
+			pw.flush();			
 		}
-		else if(comando.startsWith("GET")) {
-			if(!autenticado(idComando)) return; // ---------------------------------------------- SI NO ESTÁ AUTENTICADO
+		else if(comando.startsWith("GET")) { // ---------------------------------------------- [ GET ]
+			if(!autenticado(idComando)) return; 
 
 			
 			// ---------------------------------------------- GET OBJETO CORRESPONDIENTE
@@ -127,19 +160,37 @@ public class ClientChannel extends Thread{
 		        return;
 			}
 			
-			
 			// ---------------------------------------------- ENVIAR PREOK
-		    pw.println("PREOK " + idComando + " 200 " + socketCliente.getLocalAddress().getHostAddress() + " " + ServerConfig.puertoObjetos);
+			int puertoDatos = dataChannel.puertoLocal();
+			if(puertoDatos == -1) {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 405 FALLO_ESTABLECIENDO_PUERTO");
+		        pw.println("FAILED " + idComando + " 405 FALLO_ESTABLECIENDO_PUERTO");
+		        pw.flush();
+		        return;
+			}
+			pw.println("PREOK " + idComando + " 200 " + socketCliente.getLocalAddress().getHostAddress() + " " + puertoDatos);
 		    pw.flush();
 		    
-		    
-		    // ---------------------------------------------- RESPUESTA DEL HANDLER
-		    String respuesta = getHandler.responderGet(idComando, obj, "TITULACION_ENVIADA");
-		    pw.println(respuesta);
+			Socket ss = dataChannel.esperarConexion();
+			if(ss == null) {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 405 FALLO_CONEXION_SOCKET");
+		        pw.println("FAILED " + idComando + " 405 FALLO_CONEXION_SOCKET");
+		        pw.flush();
+		        return;
+			}
+			
+			if(dataChannel.enviarObjeto(ss, obj)) {
+				System.out.println("RESPUESTA: OK " + idComando + " 200  OBJETO_ENVIADO");
+				pw.println("OK " + idComando + " 200  OBJETO_ENVIADO");
+			} else {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO\"");
+				pw.println("FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO");
+			}
+			
 			pw.flush();
-		}
-		else if(comando.startsWith("COUNT")) {
-			if(!autenticado(idComando)) return; // ---------------------------------------------- SI NO ESTÁ AUTENTICADO
+		} else if(comando.startsWith("COUNT")) { // ---------------------------------------------- [ COUNT ]
+			if(!autenticado(idComando)) return; 
+			
 			
 			// ---------------------------------------------- RESPUESTA DEL HANDLER
 			String respuesta = (String) countHandler.handle(idComando, partes);
@@ -167,7 +218,7 @@ public class ClientChannel extends Thread{
 				// ----------------------------------------------------------- SALIR DEL PROGRAMA
 				case "EXIT":
 					pw.println("OK " + idComando + " 200 CERRANDO_CONEXIÓN...");
-					cerrarConexion();
+					if(!cerrado) cerrarConexion();
 				break;
 				
 				default:
@@ -232,9 +283,9 @@ public class ClientChannel extends Thread{
 		
 		default:
 			pw.println("FAILED " + idComando + " 400 COMANDO_NO_EXISTENTE");
-	}
-	
-	pw.flush();
+		}
+		
+		pw.flush();
 	}
 	
 	
@@ -252,7 +303,7 @@ public class ClientChannel extends Thread{
 	}
 	
 	
-	//  ----------------------------------------------------------- CERRAR SOCKET
+	// ----------------------------------------------------------- CERRAR SOCKET
 	private void cerrarConexion() {
 		try {
 			if(socketCliente.isConnected()) socketCliente.close();
@@ -261,6 +312,7 @@ public class ClientChannel extends Thread{
 				sesiones--;
 			}
 			
+			cerrado = true;
 		} catch(IOException ex) {
 			System.out.println("cerrarConexion (ClientChannel): " + ex.getMessage());
 		}

@@ -11,20 +11,18 @@ public class MainChannel {
 	private ServerSocket socket = null;
 	private Socket socketCliente = null;
 	private ClientChannel hilo = null;
-	
-	private final DataChannel dataChannel;
+
 	private final ERPDataManager dataManager = new ERPDataManager();
 	
 	
 	// ---------------------------------------------- CONSTRUCTOR
 	public MainChannel() throws IOException {
 		socket = new ServerSocket(ServerConfig.puertoComandos);
-		this.dataChannel = new DataChannel();
 		
 		System.out.println("Servidor abierto");
 	}
 	
-	// METODO PRINCIPAL: abrir el serversocket, el socket y el hilo (y lanzarlo)
+	// ---------------------------------------------- ABRIR EL SERVERSOCKET, EL SOCKET Y EL HILO (Y LANZARLO)
 	public void abrirCanalComandos() {
 		try {
 			
@@ -35,7 +33,7 @@ public class MainChannel {
 				
 				
 				// ---------------------------------------------- CANAL DE COMANDOS 
-				hilo = new ClientChannel(socketCliente, dataManager, dataChannel);
+				hilo = new ClientChannel(socketCliente, dataManager);
 				hilo.start();
 			}
 		} catch (IOException ex) {

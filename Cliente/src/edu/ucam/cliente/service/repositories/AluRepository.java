@@ -1,5 +1,7 @@
 package edu.ucam.cliente.service.repositories;
 
+import java.util.Scanner;
+
 import edu.ucam.cliente.interfaces.IChannelData;
 import edu.ucam.cliente.interfaces.ICommunicationServer;
 import edu.ucam.domain.Alumno;
@@ -11,5 +13,10 @@ public class AluRepository extends BaseRepository <Alumno>{
 				"COUNTALU", "UPDATEALU");
 		
 	}
-	
+
+	@Override
+	public Alumno crearObjeto(Scanner S, String idObjeto) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -45,22 +45,11 @@ public class GetHandler implements ICommandHandler{
 
 	
 	// ---------------------------------------------- ENVIAR OBJETO AL CLIENTE
-	public String responderGet(String idComando, Object obj, String msgOk) {
-		Socket socketDatos = dataChannel.esperarConexion();
-		if(socketDatos == null) return "FAILED " + idComando + " 500 ERROR_CONEXION_DATOS";
+	public String responderGet(Socket socketDatos, String idComando, Object obj, String msgOk) {
+		if(dataChannel.enviarObjeto(socketDatos, obj))
+		    return "OK " + idComando + " 200  " + msgOk;
 		
-		try {
-			if(dataChannel.enviarObjeto(socketDatos, obj)) {
-			    return "OK " + idComando + " 200  " + msgOk;
-			}
-			return "FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO";
-		} finally {
-			try {
-				socketDatos.close();
-			} catch (IOException e) {
-				System.out.println("responderGet: " + e.getMessage());
-			}
-		}
+		return "FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO";
 	}
 	
 }

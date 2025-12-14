@@ -50,54 +50,94 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public T getModel(String id) throws IOException, ClassNotFoundException {
-		String respuesta = comunicacion.enviarComando(getComando + " " + id);
-		
-		if(respuesta == null) {
-			System.out.println("Sin respuesta por parte del servidor: " + getComando);
-			return null;
-		}
-		
-		ResponseParser parser = new ResponseParser(respuesta);
-		
-		if(parser.isPREOK()) {
-			T responseModel = (T) channelData.recibirObjeto(parser.getIp(), parser.getPort());
+	public T getModel(String idObjeto) {
+		try {
 			
-			String respuesta2 = comunicacion.recibirRespuesta();
-			
-			if(respuesta2 != null) {
-				ResponseParser parser2 = new ResponseParser(respuesta2);
-				if(parser2.isOK()) return responseModel;
-				
-				System.out.println("Fallo final tras PREOK: " + parser2.getCodigo() + " " + parser2.getMessage());
+			// ---------------------------------------------- RECIBIR RESPUESTA DEL SERVIDOR
+			String respuesta = comunicacion.enviarComando(getComando + " " + idObjeto);
+			if(respuesta == null) {
+				System.out.println("Sin respuesta por parte del servidor: " + getComando);
 				return null;
 			}
 			
-			 System.out.println("No llegó el OK final tras PREOK");
-			 return null;
-		}
-		else if(parser.isFAILED()) {
-			if(parser.getMessage().equals("OBJETO_NO_ENCONTRADO")) System.out.println("NO SE HA ENCONTADO EL OBJETO PEDIDO\n");
-			else System.out.println("ERROR INESPERADO\n");
+			
+			// ---------------------------------------------- PARSEAR PREOK PARA EXTRAER IP Y PUERTO
+			ResponseParser parser = new ResponseParser(respuesta);
+			if(parser.isPREOK()) {
+				T responseModel = (T) channelData.recibirObjeto(parser.getIp(), parser.getPort());
+			
+				
+				// ---------------------------------------------- OBTENER OBJETO RECIBIDO POR EL CANAL CON OK
+				String respuesta2 = comunicacion.recibirRespuesta();
+				if(respuesta2 != null) {
+					ResponseParser parser2 = new ResponseParser(respuesta2);
+					if(parser2.isOK()) return responseModel; 
+					
+					System.out.println("Fallo final tras PREOK: " + parser2.getCodigo() + " " + parser2.getMessage());
+				}
+				
+				 System.out.println("No llegó el OK final tras PREOK");
+				 return null;
+			}
+			else if(parser.isFAILED()) {
+				if(parser.getMessage().equals("OBJETO_NO_ENCONTRADO")) System.out.println("NO SE HA ENCONTADO EL OBJETO PEDIDO\n");
+				else System.out.println("ERROR INESPERADO\n");
+			}
+		} catch(IOException ex) {
+			System.out.println("getModel (BaseRepository): " + ex.getMessage());
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public String sendModel(String idObjeto, Object model) {
+		try {
+			String respuesta = comunicacion.enviarComando(addComando + " " + idObjeto);
+			
+			if(respuesta == null) {
+				return "Sin respuesta por parte del servidor: " + addComando;
+			}
+						
+			ResponseParser parser = new ResponseParser(respuesta);
+			if(parser.isPREOK()) {
+				channelData.enviarObjeto(parser.getIp(), parser.getPort(), model);
+				
+				String respuesta2 = comunicacion.recibirRespuesta();
+				if(respuesta2 != null) {
+					ResponseParser parser2 = new ResponseParser(respuesta2);
+					
+					if(parser2.isOK()) return "OBJETO ENVIADO CON EXITO!";
+				}
+			} else if(parser.isFAILED()) {
+				return "ERROR EN EL ENVIO DEL OBJETO";
+			}
+		} catch (IOException e) {
+			System.out.println("sendModel (BaseRepository): " + e.getMessage());
+		}
+		
+		return "NO SE PUDO ENVIAR EL OBJETO";
 	}
 
 	@Override
 	public int modelSize() {
 		try {
-			String respuestaServidor = comunicacion.enviarComando(countComando);
 			
-			if(respuestaServidor == null) {
+			// ---------------------------------------------- RECIBIR RESPUESTA DEL SERVIDOR
+			String respuesta = comunicacion.enviarComando(countComando);
+			if(respuesta == null) {
 				System.out.println("ERROR EN LA RESPUESTA DEL SERVIDOR\n");
 				return -1;
 			}
 			
-			ResponseParser parser = new ResponseParser(respuestaServidor);
 			
+			// ---------------------------------------------- PARSEAR RESPUESTA PARA EXTRAER TAMAÑO
+			ResponseParser parser = new ResponseParser(respuesta);
 			if(parser.isOK()) {
 				String msg = parser.getMessage();
+				
+				
+				// ---------------------------------------------- PARSEAR A UN ENTERO
 				try {
 					return Integer.parseInt(msg);
 				} catch(NumberFormatException ex) {
@@ -112,9 +152,8 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 			}
 			
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			System.out.println("modelSize (BaseRepository): " + e.getMessage());
 			return -1;
 		}
 	}
-	
 }

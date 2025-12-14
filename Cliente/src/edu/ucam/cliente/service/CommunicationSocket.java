@@ -69,12 +69,6 @@ public class CommunicationSocket implements ICommunicationServer{
 		
 		// ---------------------------------------------- RECIBIR LA RESPUESTA
 		String respuesta = recibirRespuesta();
-		
-		/*
-		if(respuesta != null) System.out.println(respuesta + "\n");
-		else System.out.println("Ninguna respuesta por parte del servidor.");
-		*/
-		
 		return respuesta;
 	}
 	
@@ -91,12 +85,5 @@ public class CommunicationSocket implements ICommunicationServer{
 		}
 		
 		return null;
-	}
-	
-	
-	
-	@Override
-	public boolean isVivo() {
-		return estado;
 	}
 }

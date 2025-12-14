@@ -28,7 +28,7 @@ public class AuthenticationService implements IAuthentication{
 				}
 			}
 		} catch(IOException ex) {
-			System.out.println(ex.getMessage());
+			System.out.println("autenticar (AuthenticationService): " + ex.getMessage());
 		}
 		
 		return false;
