@@ -29,20 +29,11 @@ public class ClientChannel extends Thread{
 	private final DataChannel dataChannel;
 	
 	
-	// ---------------------------------------------- HANDLERS
-	private final GetHandler getHandler;
-	private final CountHandler countHandler;
-	
-	
-	
 	// ---------------------------------------------- CONSTRUCTOR
 	public ClientChannel(Socket socketCliente, ERPDataManager data) {
 		this.socketCliente = socketCliente;
 		this.data = data;
 		this.dataChannel = new DataChannel();
-		
-		this.getHandler = new GetHandler(data, dataChannel);
-		this.countHandler = new CountHandler(data);
 		
 		try {
 			br = new BufferedReader(new InputStreamReader(socketCliente.getInputStream()));
@@ -150,7 +141,7 @@ public class ClientChannel extends Thread{
 		else if(comando.startsWith("GET")) { // ---------------------------------------------- [ GET ]
 			if(!autenticado(idComando)) return; 
 
-			
+			GetHandler getHandler = new GetHandler(data, dataChannel);
 			// ---------------------------------------------- GET OBJETO CORRESPONDIENTE
 			Object obj = getHandler.handle(idComando, partes);
 			if(obj == null) {
@@ -191,7 +182,7 @@ public class ClientChannel extends Thread{
 		} else if(comando.startsWith("COUNT")) { // ---------------------------------------------- [ COUNT ]
 			if(!autenticado(idComando)) return; 
 			
-			
+			CountHandler countHandler = new CountHandler(data);
 			// ---------------------------------------------- RESPUESTA DEL HANDLER
 			String respuesta = (String) countHandler.handle(idComando, partes);
 			pw.println(respuesta);
