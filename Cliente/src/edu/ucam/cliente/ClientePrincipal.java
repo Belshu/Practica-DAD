@@ -19,14 +19,10 @@ public class ClientePrincipal {
 		try {
 			ClienteERP cliente = new ClienteERP();
 			
-			
 			// ---------------------------------------------- AUTENTICAR CLIENTE
-			if(cliente.autenticar(usuario, contrasena)) { 
-				System.out.println("ADMINISTRADOR AUTENTICADO\n");
-				
+			if(cliente.autenticar(usuario, contrasena)) { 				
 				System.out.print("(Escribe los comandos a continuacion)> ");
-				String mensaje = S.nextLine();
-				
+				String mensaje = S.nextLine();			
 				
 				// ---------------------------------------------- ESCRIBIR COMANDOS
 				while(mensaje != null && !mensaje.equalsIgnoreCase("EXIT")) {
