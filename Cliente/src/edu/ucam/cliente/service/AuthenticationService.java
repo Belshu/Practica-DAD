@@ -20,11 +20,18 @@ public class AuthenticationService implements IAuthentication{
 			String respuestaServidor = communication.enviarComando("USER " + usuario); 
 			
 			if(respuestaServidor != null) {
-				if(respuestaServidor.startsWith("OK")) {
+				ResponseParser parser = new ResponseParser(respuestaServidor);
+				if(parser.isOK()) {
 					respuestaServidor = communication.enviarComando("PASS " + contrasena);
+					System.out.println(parser.getMessage());
 					
-					if(respuestaServidor != null) return respuestaServidor.startsWith("OK");
-					else return false;
+					if(respuestaServidor != null) {
+						ResponseParser parser2 = new ResponseParser(respuestaServidor);
+						System.out.println(parser2.getMessage());
+						return respuestaServidor.startsWith("OK");
+					}
+				} else if(parser.isFAILED()) {
+					System.out.println("ERROR: " + parser.getMessage());
 				}
 			}
 		} catch(IOException ex) {

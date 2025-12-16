@@ -88,8 +88,8 @@ public class ClientChannel extends Thread{
 	
 	// ----------------------------------------------------------- GESTIONAR COMANDOS
 	private void gestionarComandos(String comandoCompleto) {
+		if(comandoCompleto == null) return;
 		String [] partes = comandoCompleto.trim().split(" ");
-		
 		
 		// ---------------------------------------------- MINIMO [ ID_COMANDO ]  & [ COMANDO ] 
 		if(partes.length < 2) {
@@ -235,8 +235,8 @@ public class ClientChannel extends Thread{
 				
 				if(ServerConfig.nombre.equals(nombre)) {
 					nombreCorrecto = true;
-					System.out.println("RESPUESTA: OK " + idComando + " 200 NOMBRE_OK");
-					pw.println("OK " + idComando + " 200 NOMBRE_OK");
+					System.out.println("RESPUESTA: OK " + idComando + " 200 NOMBRE_CORRECTO");
+					pw.println("OK " + idComando + " 200 NOMBRE_CORRECTO");
 				} else {
 					nombreCorrecto = false;
 					System.out.println("RESPUESTA: FAILED " + idComando + " 401 NOMBRE_INCORRECTO");
@@ -256,8 +256,8 @@ public class ClientChannel extends Thread{
 					if(ServerConfig.contrasena.equals(contrasena)) {
 						contrasenaCorrecta = true;
 						
-						System.out.println("RESPUESTA: OK " + idComando + " 200 CONTRASEÑA_OK");
-						pw.println("OK " + idComando + " 200 CONTRASEÑA_OK");
+						System.out.println("RESPUESTA: OK " + idComando + " 200 CONTRASEÑA_CORRECTA");
+						pw.println("OK " + idComando + " 200 CONTRASEÑA_CORRECTA");
 					} else {
 						contrasenaCorrecta = false;
 						
@@ -266,8 +266,8 @@ public class ClientChannel extends Thread{
 						pw.println("FAILED " + idComando + " 401 CONTRASEÑA_INCORRECTA");
 					}
 				} else {
-					System.out.println("RESPUESTA: FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
-					pw.println("FAILED " + idComando + " 403 NOMBRE_NO_VALIDO");
+					System.out.println("RESPUESTA: FAILED " + idComando + " 403 CONTRASEÑA_NO_VALIDA");
+					pw.println("FAILED " + idComando + " 403 CONTRASEÑA_NO_VALIDA");
 				}
 			}
 		break;

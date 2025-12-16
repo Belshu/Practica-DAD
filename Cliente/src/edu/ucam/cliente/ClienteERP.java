@@ -71,7 +71,17 @@ public class ClienteERP {
 			else if(comando.startsWith("COUNT")) gestionarCount(comando);
 			else if(comando.equalsIgnoreCase("SESIONES")) imprimirSesiones(mensaje);
 			else if(comando.equalsIgnoreCase("EXIT")) autenticacion.cerrarSesion();
-			else comunicacion.enviarComando(mensaje);
+			else if(comando.equalsIgnoreCase("USER") || comando.equalsIgnoreCase("PASS")){
+				String respuesta = comunicacion.enviarComando(mensaje);
+				ResponseParser parser = new ResponseParser(respuesta);
+				
+				if(parser.isOK()) System.out.println(parser.getMessage());
+				else if(parser.isFAILED()) System.out.println("ERROR: " + parser.getMessage());
+				else {
+					System.out.println("ERROR INESPERADO!");
+					return;
+				}
+			}
 		
 		} catch(IOException ex) {
 			System.out.println("ejecutarComando (ClienteERP): " + ex.getMessage());
@@ -83,7 +93,7 @@ public class ClienteERP {
 		Scanner S = new Scanner(System.in);
 		
 		if(partes.length < 2) {
-			System.out.println("COMANDO INCOMPLETO!\n");
+			System.out.println("COMANDO INCOMPLETO!");
 			return;
 		}
 		
@@ -92,11 +102,11 @@ public class ClienteERP {
 			switch(comando) {
 				case "ADDTIT":
 					Titulacion t = repositorioTitulaciones.crearObjeto(S, idObjeto);
-					System.out.println(repositorioTitulaciones.add(idObjeto, t) + "\n");
+					System.out.println(repositorioTitulaciones.add(idObjeto, t));
 				break;
 				
 				default:
-					System.out.println("COMANDO NO RECONOCIDO\n");
+					System.out.println("COMANDO NO RECONOCIDO");
 			}
 		} catch(Exception ex) {
 			System.out.println("gestionarAdd (ClienteERP): " + ex.getMessage());
@@ -115,11 +125,11 @@ public class ClienteERP {
 			switch(comando) {
 				case "GETTIT":
 					Titulacion t = repositorioTitulaciones.getModel(partes[1]);
-					if(t != null) System.out.println(">> ID: " + t.getId() + "\t>> NOMBRE: " + t.getNombre() + "\n");
+					if(t != null) System.out.println(">> ID: " + t.getId() + "\t>> NOMBRE: " + t.getNombre());
 				break;
 				
 				default:
-					System.out.println("COMANDO NO RECONOCIDO\n");
+					System.out.println("COMANDO NO RECONOCIDO");
 			}
 		} catch(IOException ex) {
 			System.out.println("gestionarGet (ClienteERP): " + ex.getMessage());
@@ -135,7 +145,7 @@ public class ClienteERP {
 		switch(comando) {
 			case "COUNTTIT":
 				total =  repositorioTitulaciones.modelSize();
-				if(total != -1) System.out.println("CANTIDAD DE TITULACIONES -> " + total + "\n");
+				if(total != -1) System.out.println("CANTIDAD DE TITULACIONES -> " + total);
 			break;
 			
 			default:
@@ -154,7 +164,7 @@ public class ClienteERP {
 			}
 			
 			ResponseParser parser = new ResponseParser(respuesta);
-			if(parser.isOK()) System.out.println("SESIONES ACTIVAS -> " + parser.getMessage() + "\n");
+			if(parser.isOK()) System.out.println("SESIONES ACTIVAS -> " + parser.getMessage());
 			
 		} catch (IOException e) {
 			System.out.println("imprimirSesiones (ClienteERP): " + e.getMessage());
