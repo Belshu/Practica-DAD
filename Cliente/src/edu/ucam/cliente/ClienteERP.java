@@ -60,6 +60,8 @@ public class ClienteERP {
 	// ---------------------------------------------- GESTOR DE COMANDOS
 	public void ejecutarComando(String mensaje) {
 		
+		if(mensaje.isEmpty()) return;
+		
 		String [] partes = mensaje.trim().split(" ");
 		String comando = partes[0].toUpperCase(); // ADD, GET, COUNT...
 		
@@ -135,6 +137,9 @@ public class ClienteERP {
 				total =  repositorioTitulaciones.modelSize();
 				if(total != -1) System.out.println("CANTIDAD DE TITULACIONES -> " + total + "\n");
 			break;
+			
+			default:
+				System.out.println("COMANDO NO RECONOCIDO\n");
 		}
 	}
 	
