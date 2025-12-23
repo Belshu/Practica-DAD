@@ -21,25 +21,12 @@ public class CountHandler implements ICommandHandler{
 		String comando = partes[1].toUpperCase();
 
 	    switch (comando) {
-	        case "COUNTTIT":
-	            total = data.getTitulacionRepository().count();
-	            break;
-
-	        case "COUNTASIG":
-	            total = data.getAsigRepository().count();
-	            break;
-
-	        case "COUNTMATRICULA":
-	            total = data.getMatRepository().count();
-	            break;
-
-	        case "COUNTALU":
-	            total = data.getAluRepository().count();
-	            break;
-
-	        default:
-	            System.out.println("RESPUESTA: FAILED " + idComando + " 400 COMANDO_COUNT_NO_VALIDO");
-	            return "FAILED " + idComando + " 400 COMANDO_COUNT_NO_VALIDO";
+	        case "COUNTTIT": total = data.getTitulacionRepository().count(); break;
+	        case "COUNTASIG": total = data.getAsigRepository().count(); break;
+	        case "COUNTMATRICULA": total = data.getMatRepository().count(); break;
+	        default: 
+	        	System.out.println("RESPUESTA: FAILED " + idComando + " 400 COMANDO_COUNT_NO_VALIDO"); 
+	        return "FAILED " + idComando + " 400 COMANDO_COUNT_NO_VALIDO";
 	    }
 
 	    System.out.println("RESPUESTA: OK " + idComando + " 200 " + total);

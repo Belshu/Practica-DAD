@@ -31,6 +31,7 @@ public class CommunicationSocket implements ICommunicationServer{
 			String respuesta = recibirRespuesta();
 			ResponseParser parser = new ResponseParser(respuesta);
 			if(parser.isOK()) System.out.println(parser.getMessage());
+			else System.out.println("RESPUESTA: " + parser.getMessage());
 			
 			estado = true;
 		} catch(IOException ex) {

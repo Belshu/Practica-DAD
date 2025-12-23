@@ -25,7 +25,6 @@ public class ClienteERP {
 	private final IRepository<Asignatura> repositorioAsignaturas;
 	private final IRepository<Titulacion> repositorioTitulaciones;
 	private final IRepository<Matricula> repositorioMatriculas;
-	private final IRepository<Alumno> repositorioAlumnos;
 	
 	
 	// ---------------------------------------------- CONEXIÓN SOCKET CON SERVIDOR Y AUTENTICAR
@@ -41,7 +40,6 @@ public class ClienteERP {
 		this.repositorioAsignaturas = new SubjectRepository(comunicacion, channelData);
 		this.repositorioTitulaciones = new TituRepository(comunicacion, channelData);
 		this.repositorioMatriculas = new MatRepository(comunicacion, channelData);
-		this.repositorioAlumnos = new AluRepository(comunicacion, channelData);
 	}
 	
 	
@@ -68,7 +66,7 @@ public class ClienteERP {
 		try {
 			if(comando.startsWith("ADD")) gestionarAdd(comando, partes);
 			else if(comando.startsWith("GET")) gestionarGet(comando, partes);
-			else if(comando.startsWith("COUNT")) gestionarCount(comando);
+			else if(comando.startsWith("COUNT")) gestionarCount(comando); 
 			else if(comando.equalsIgnoreCase("SESIONES")) imprimirSesiones(mensaje);
 			else if(comando.equalsIgnoreCase("EXIT")) autenticacion.cerrarSesion();
 			else if(comando.equalsIgnoreCase("USER") || comando.equalsIgnoreCase("PASS")){

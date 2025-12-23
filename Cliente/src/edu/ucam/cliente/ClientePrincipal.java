@@ -3,18 +3,25 @@ package edu.ucam.cliente;
 import java.io.IOException;
 import java.util.Scanner;
 
+import edu.ucam.cliente.UI.AuthenticationForm;
+
 public class ClientePrincipal {
 	public static void main(String[] args){
 		
-		// ---------------------------------------------- PREGUNTAR AL USUARIO EL NOMBRE Y LA CONTRASEÑA
-		String usuario = null, contrasena = null;
-		Scanner S = new Scanner(System.in);
+		// ---------------------------------------------- INTERFAZ GRAFICA INICIAL
+		new AuthenticationForm();
 		
-		while(usuario == null || usuario.isEmpty() || contrasena == null || contrasena.isEmpty()) {
-			System.out.print("Nombre: "); usuario = S.nextLine();
-			System.out.print("Contraseña: "); contrasena = S.nextLine();
+		/*
+		if(usuario == null) {
+			System.out.println("Nombre de usuario no introducido correctamente!");
+			System.exit(0);
 		}
 		
+		if(contrasena == null) {
+			System.out.println("Contraseña no introducida correctamente!");
+			System.exit(0);
+		}
+
 		// ---------------------------------------------- COMENZAR CONEXIÓN CON EL SERVIDOR
 		try {
 			ClienteERP cliente = new ClienteERP();
@@ -51,5 +58,6 @@ public class ClientePrincipal {
 		
 		System.out.println("\nFIN DE LA APLICACIÓN");
 		S.close();
+		*/
 	}
 }

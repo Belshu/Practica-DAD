@@ -137,8 +137,7 @@ public class ClientChannel extends Thread{
 			String respuesta = (String) addHandler.handle(idComando, partes);
 			pw.println(respuesta);
 			pw.flush();			
-		}
-		else if(comando.startsWith("GET")) { // ---------------------------------------------- [ GET ]
+		} else if(comando.startsWith("GET")) { // ---------------------------------------------- [ GET ]
 			if(!autenticado(idComando)) return; 
 
 			GetHandler getHandler = new GetHandler(data, dataChannel);
