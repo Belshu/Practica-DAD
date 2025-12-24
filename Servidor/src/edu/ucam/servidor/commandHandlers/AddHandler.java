@@ -28,8 +28,8 @@ public class AddHandler implements ICommandHandler {
 					boolean added = data.getTitulacionRepository().add(t);
 					
 					if(!added) {
-						System.out.println("RESPUSETA: FAILED " + idComando + " 400 ID_REPETIDO");
-						return "FAILED " + idComando + " 400 ID_REPETIDO";
+						System.out.println("RESPUSETA: FAILED " + idComando + " 409 ID_REPETIDO");
+						return "FAILED " + idComando + " 409 ID_REPETIDO";
 					}
 				} else {
 					System.out.println("RESPUSETA: FAILED " + idComando + " 400 OBJETO_INVALIDO");
@@ -54,7 +54,7 @@ public class AddHandler implements ICommandHandler {
 		            return "FAILED " + idComando + " 400 COMANDO_ADD_NO_VALIDO";
 		}
 		
-		return "OK " + idComando + " 200 OBJETO_RECIBIDO";
+		return "OK " + idComando + " 201 OBJETO_RECIBIDO";
 	}
 
 	public void setModel(Object model) {

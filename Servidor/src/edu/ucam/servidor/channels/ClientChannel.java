@@ -170,10 +170,10 @@ public class ClientChannel extends Thread{
 			}
 			
 			if(dataChannel.enviarObjeto(ss, obj)) {
-				System.out.println("RESPUESTA: OK " + idComando + " 200  OBJETO_ENVIADO");
-				pw.println("OK " + idComando + " 200  OBJETO_ENVIADO");
+				System.out.println("RESPUESTA: OK " + idComando + " 201 OBJETO_ENVIADO");
+				pw.println("OK " + idComando + " 201 OBJETO_ENVIADO");
 			} else {
-				System.out.println("RESPUESTA: FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO\"");
+				System.out.println("RESPUESTA: FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO");
 				pw.println("FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO");
 			}
 			
@@ -192,8 +192,8 @@ public class ClientChannel extends Thread{
 				System.out.println("RESPUESTA: OK " + idComando + " 200 ARCHIVOS_GUARDADOS");
 				pw.println("OK " + idComando + " 200 ARCHIVOS_GUARDADOS");
 			} else {
-				System.out.println("FAILED " + idComando + " 400 ERROR_GUARDANDO_ARCHIVOS");
-				pw.println("FAILED " + idComando + " 400 ERROR_GUARDANDO_ARCHIVOS");
+				System.out.println("FAILED " + idComando + " 500 ERROR_GUARDANDO_ARCHIVOS");
+				pw.println("FAILED " + idComando + " 500 ERROR_GUARDANDO_ARCHIVOS");
 			}
 			
 			pw.flush();
@@ -237,8 +237,8 @@ public class ClientChannel extends Thread{
 		// ----------------------------------------------------------- AUTENTICAR NOMBRE DE USUARIO
 		case "USER":
 			if(partes.length != 3) {
-				System.out.println("RESPUESTA: FAILED " + idComando + " 400 FALTA_NOMBRE");
-				pw.println("FAILED " + idComando + " 400 FALTA_NOMBRE");
+				System.out.println("RESPUESTA: FAILED " + idComando + " 402 FALTA_NOMBRE");
+				pw.println("FAILED " + idComando + " 402 FALTA_NOMBRE");
 			} else {
 				String nombre = partes[2];
 				
