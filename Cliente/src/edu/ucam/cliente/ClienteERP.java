@@ -71,6 +71,7 @@ public class ClienteERP {
 			else if(comando.startsWith("COUNT")) gestionarCount(comando); 
 			else if(comando.equalsIgnoreCase("SESIONES")) imprimirSesiones(mensaje);
 			else if(comando.equalsIgnoreCase("EXIT")) autenticacion.cerrarSesion();
+			else if(comando.equalsIgnoreCase("save")) guardarInformacion(mensaje);
 			else if(comando.equalsIgnoreCase("USER") || comando.equalsIgnoreCase("PASS")){
 				String respuesta = comunicacion.enviarComando(mensaje);
 				ResponseParser parser = new ResponseParser(respuesta);
@@ -184,11 +185,39 @@ public class ClienteERP {
 			} else if(parser.isFAILED()){
 				respuestaServidor = "ERROR SESIONES -> " + parser.getMessage();
 			} else {
-				respuestaServidor = "RESPUESTA DECONOCIDA";
+				respuestaServidor = "RESPUESTA DESCONOCIDA";
 			}
 			
 		} catch (IOException e) {
 			System.out.println("imprimirSesiones (ClienteERP): " + e.getMessage());
+		}
+	}
+	
+	
+	// ---------------------------------------------- GUARDAR INFORMACION DEL SERVIDOR
+	private void guardarInformacion(String mensaje) {
+		try {
+			respuestaServidor = comunicacion.enviarComando(mensaje);
+			
+			if(respuestaServidor == null) {
+				System.out.println("Sin respuesta por parte del servidor.\n");
+				
+				return;
+			}
+			
+			ResponseParser parser = new ResponseParser(respuestaServidor);
+			
+			System.out.println(respuestaServidor);
+			
+			if(parser.isOK()) {
+				respuestaServidor = parser.getMessage();
+			} else if(parser.isFAILED()){
+				respuestaServidor = "ERROR -> " + parser.getMessage();
+			} else {
+				respuestaServidor = "RESPUESTA DESCONOCIDA";
+			}
+		} catch(IOException ex) {
+			System.out.println("imprimirSesiones (ClienteERP): " + ex.getMessage());
 		}
 	}
 	

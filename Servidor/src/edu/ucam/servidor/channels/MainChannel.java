@@ -18,6 +18,7 @@ public class MainChannel {
 	// ---------------------------------------------- CONSTRUCTOR
 	public MainChannel() throws IOException {
 		socket = new ServerSocket(ServerConfig.puertoComandos);
+		dataManager.load(); // ---------------------------------------------- CARGAR DATOS DE FICHEROS
 		
 		System.out.println("Servidor abierto");
 	}
@@ -31,7 +32,6 @@ public class MainChannel {
 				System.out.println("Cliente conectado: " + socketCliente.getInetAddress().getHostAddress() 
 						+ " : " + socketCliente.getPort());
 				
-				
 				// ---------------------------------------------- CANAL DE COMANDOS 
 				hilo = new ClientChannel(socketCliente, dataManager);
 				hilo.start();
@@ -39,5 +39,10 @@ public class MainChannel {
 		} catch (IOException ex) {
 			System.out.println("abrirCanalComandos (MainChannel): " + ex.getMessage());
 		}
+	}
+	
+	public void saveData() {
+		dataManager.save();
+		System.out.println("Datos guardados!");
 	}
 }

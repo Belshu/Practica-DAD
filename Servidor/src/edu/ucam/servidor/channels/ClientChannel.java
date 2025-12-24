@@ -25,14 +25,14 @@ public class ClientChannel extends Thread{
 	
 	
 	// ---------------------------------------------- MANEJO DE DATOS Y CANAL DE OBJETOS PARA ENVIAR/RECIBIR
-	private final ERPDataManager data;
+	private final ERPDataManager dataManager;
 	private final DataChannel dataChannel;
 	
 	
 	// ---------------------------------------------- CONSTRUCTOR
-	public ClientChannel(Socket socketCliente, ERPDataManager data) {
+	public ClientChannel(Socket socketCliente, ERPDataManager dataManager) {
 		this.socketCliente = socketCliente;
-		this.data = data;
+		this.dataManager = dataManager;
 		this.dataChannel = new DataChannel();
 		
 		try {
@@ -132,7 +132,7 @@ public class ClientChannel extends Thread{
 		        pw.flush();
 		        return;
 			}
-			AddHandler addHandler = new AddHandler(data);
+			AddHandler addHandler = new AddHandler(dataManager);
 			addHandler.setModel(obj);
 			String respuesta = (String) addHandler.handle(idComando, partes);
 			pw.println(respuesta);
@@ -140,7 +140,7 @@ public class ClientChannel extends Thread{
 		} else if(comando.startsWith("GET")) { // ---------------------------------------------- [ GET ]
 			if(!autenticado(idComando)) return; 
 
-			GetHandler getHandler = new GetHandler(data, dataChannel);
+			GetHandler getHandler = new GetHandler(dataManager, dataChannel);
 			// ---------------------------------------------- GET OBJETO CORRESPONDIENTE
 			Object obj = getHandler.handle(idComando, partes);
 			if(obj == null) {
@@ -181,13 +181,23 @@ public class ClientChannel extends Thread{
 		} else if(comando.startsWith("COUNT")) { // ---------------------------------------------- [ COUNT ]
 			if(!autenticado(idComando)) return; 
 			
-			CountHandler countHandler = new CountHandler(data);
+			CountHandler countHandler = new CountHandler(dataManager);
 			// ---------------------------------------------- RESPUESTA DEL HANDLER
 			String respuesta = (String) countHandler.handle(idComando, partes);
 			pw.println(respuesta);
 			pw.flush();
+		} else if(comando.equals("USER") || comando.equals("PASS")) autenticar(idComando, comando, partes); // AUTENTICACION DE USUARIO
+		else if(comando.equalsIgnoreCase("SAVE")) {
+			if(dataManager.save()) {
+				System.out.println("RESPUESTA: OK " + idComando + " 200 ARCHIVOS_GUARDADOS");
+				pw.println("OK " + idComando + " 200 ARCHIVOS_GUARDADOS");
+			} else {
+				System.out.println("FAILED " + idComando + " 400 ERROR_GUARDANDO_ARCHIVOS");
+				pw.println("FAILED " + idComando + " 400 ERROR_GUARDANDO_ARCHIVOS");
+			}
+			
+			pw.flush();
 		}
-		else if(comando.equals("USER") || comando.equals("PASS")) autenticar(idComando, comando, partes); // AUTENTICACION DE USUARIO
 		else {
 			
 			// ----------------------------------------------------------- SESIONES & EXIT

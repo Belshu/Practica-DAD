@@ -23,10 +23,11 @@ public class MainUI extends JFrame implements ActionListener{
 	private static final long serialVersionUID = 2L;
 	
 	private ClienteERP clienteERP;
-	private JButton saveBtn, closeBtn;
 	
+	private JButton saveBtn, closeBtn;
 	private JTextArea textArea;
 	private JTextField textField;
+	
 	
 	// ---------------------------------------------- AUTENTICACION EN EL CONSTRUCTOR
 	public MainUI(String nombre, String pass) {
@@ -51,36 +52,29 @@ public class MainUI extends JFrame implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == textField) {
-			final String cmd = textField.getText().trim();
+			String cmd = textField.getText().trim();
 			
-			if(cmd == null) return;
+			// ---------------------------------------------- CMD ES NULO
+			if(cmd == null) return; 
 			
+			 // ---------------------------------------------- COMANDO CLEAN
 			if(cmd.equalsIgnoreCase("clean")) {
 				textArea.setText("");
 				textField.setText("");
 				return;
 			}
-		
-			if(cmd.equalsIgnoreCase("exit")) {
-				clienteERP.ejecutarComando(cmd);		
-				dispose();
-				setVisible(false);
-				System.exit(0);
-			}
 			
-			clienteERP.ejecutarComando(cmd);
-			String respuesta = clienteERP.getRespuestaServidor();
-			if(respuesta.isEmpty()) respuesta = cmd;
+			// ---------------------------------------------- COMANDO EXIT
+			if(cmd.equalsIgnoreCase("exit")) closeProgram(); 
 			
-			String text = clienteERP.getIdComando() + " " + cmd.toUpperCase() + " >> " + respuesta;
 			
-			if(textArea.getText().isEmpty()) {
-				textArea.setText(text);
-			}
-			else textArea.append("\n" + text);
-			
-			textField.setText("");
+			// ---------------------------------------------- COMANDOS DE GESTIÓN DE DATOS
+			sendCmd(cmd);
 		}
+		
+		if(e.getSource() == saveBtn) sendCmd("SAVE");
+		
+		if(e.getSource() == closeBtn) closeProgram();
 	}
 	
 	
@@ -94,7 +88,40 @@ public class MainUI extends JFrame implements ActionListener{
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 		
-		textField.requestFocusInWindow();
+		// ---------------------------------------------- FOCUS EN TEXTFIELD
+		textField.requestFocusInWindow(); 
+	}
+	
+	
+	private void sendCmd(String cmd) {
+		cmd = textField.getText().trim();
+		clienteERP.ejecutarComando(cmd);
+		String respuesta = clienteERP.getRespuestaServidor();
+		if(respuesta.isEmpty()) respuesta = cmd;
+		
+		String text = clienteERP.getIdComando() + " " + cmd.toUpperCase() + " >> " + respuesta;
+		
+		if(textArea.getText().isEmpty()) {
+			textArea.setText(text);
+		}
+		else textArea.append("\n" + text);
+		
+		textField.setText("");
+	}
+	
+	
+	// ---------------------------------------------- CERRAR PROGRAMA
+	private void closeProgram() {
+		try {
+			clienteERP.ejecutarComando("exit");
+			clienteERP.cerrarSesion();
+		} catch(IOException ex) {
+			System.out.println("closeProgram (MainUI): " + ex.getMessage());
+		}
+		
+		dispose();
+		setVisible(false);
+		System.exit(0);
 	}
 	
 	
@@ -155,15 +182,7 @@ public class MainUI extends JFrame implements ActionListener{
 		closeBtn = new JButton("Salir");
 		
 		saveBtn.addActionListener(this);
-		closeBtn.addActionListener(e -> {
-			try {
-				clienteERP.cerrarSesion();
-			} catch (IOException ex) {
-				System.out.println("getButtonsPanel (MainUI): " + ex.getMessage());
-			}
-			
-			System.exit(0);
-		});
+		closeBtn.addActionListener(this);
 		
 		buttonsPanel.add(saveBtn);
 		buttonsPanel.add(closeBtn);

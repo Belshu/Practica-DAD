@@ -44,4 +44,11 @@ public class TitulacionRepository {
 		
 		return true;
 	}
+	
+	public synchronized void setAll(java.util.List<Titulacion> nuevos) {
+		if(nuevos != null) {
+			titulaciones.clear();
+			titulaciones.addAll(nuevos);
+		}
+	}
 }
