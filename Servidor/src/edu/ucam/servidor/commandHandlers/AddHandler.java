@@ -25,7 +25,12 @@ public class AddHandler implements ICommandHandler {
 			case "ADDTIT":
 				if(model instanceof Titulacion t) {
 					t = (Titulacion) model;
-					data.getTitulacionRepository().add(t);
+					boolean added = data.getTitulacionRepository().add(t);
+					
+					if(!added) {
+						System.out.println("RESPUSETA: FAILED " + idComando + " 400 ID_REPETIDO");
+						return "FAILED " + idComando + " 400 ID_REPETIDO";
+					}
 				} else {
 					System.out.println("RESPUSETA: FAILED " + idComando + " 400 OBJETO_INVALIDO");
 					return "FAILED " + idComando + " 400 OBJETO_INVALIDO";

@@ -15,8 +15,6 @@ public class CommunicationSocket implements ICommunicationServer{
 	private int idComunicacion = 1;
 	private BufferedReader br;
 	private PrintWriter pw;
-	private boolean estado;
-
 	
 	// ---------------------------------------------- CONECTAR CON EL SERVIDOR
 	@Override
@@ -32,8 +30,6 @@ public class CommunicationSocket implements ICommunicationServer{
 			ResponseParser parser = new ResponseParser(respuesta);
 			if(parser.isOK()) System.out.println(parser.getMessage());
 			else System.out.println("RESPUESTA: " + parser.getMessage());
-			
-			estado = true;
 		} catch(IOException ex) {
 			System.out.println("conectar (CommunicationSocket): " + ex.getMessage());
 		}
@@ -48,7 +44,6 @@ public class CommunicationSocket implements ICommunicationServer{
 		try {
 			if(socket.isConnected()) {
 				socket.close();
-				estado = false;
 				
 				System.out.println("CONEXION CERRADA!");
 			}
@@ -64,19 +59,17 @@ public class CommunicationSocket implements ICommunicationServer{
 		if(pw == null) return null;
 		
 		if(comando == null || comando.trim().isEmpty()) return null;
-		
 		pw.println(idComunicacion + " " + comando);
 		pw.flush();
 		
 		idComunicacion++;
 		
 		// ---------------------------------------------- RECIBIR LA RESPUESTA
-		String respuesta = recibirRespuesta();
-		return respuesta;
+		String respuestaServidor = recibirRespuesta();
+		return respuestaServidor;
 	}
 	
-	
-	// ---------------------------------------------- RECIBIR RESPUESTA DEL SERVIDOR
+	// ---------------------------------------------- RECIBIR RESPUESTA DEL SRVIDOR
 	@Override
 	public String recibirRespuesta(){
 		if(br == null) return null;
@@ -88,5 +81,13 @@ public class CommunicationSocket implements ICommunicationServer{
 		}
 		
 		return null;
+	}
+	
+	
+	// ---------------------------------------------- GETTER
+	
+	@Override
+	public int getIdComunicacion() {
+		return idComunicacion;
 	}
 }

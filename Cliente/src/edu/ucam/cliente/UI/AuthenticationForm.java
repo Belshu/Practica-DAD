@@ -17,15 +17,11 @@ import javax.swing.JTextField;
 public class AuthenticationForm extends JFrame implements ActionListener{
 	private static final long serialVersionUID = 1L;
 	
-	private final JPanel mainPanel;
-	
 	private JButton acceptBtn, cancelBtn;
 	private JTextField nameTextField, passTextField;
 	
 	// ---------------------------------------------- CONSTRUCTOR
 	public AuthenticationForm() {
-		mainPanel = new JPanel();
-		
 		initialize();
 	}
 	
@@ -38,7 +34,6 @@ public class AuthenticationForm extends JFrame implements ActionListener{
 		setResizable(false);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
 		setVisible(true);
 	}
 
@@ -46,14 +41,14 @@ public class AuthenticationForm extends JFrame implements ActionListener{
 	// ---------------------------------------------- ACTIONLISTENER DE BOTONES
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(e.getSource() == acceptBtn) { // ---------------------------------------------- EXTRAER TEXTO DE LOS TEXTFIELDS
+		if(e.getSource() == acceptBtn || e.getSource() == nameTextField || e.getSource() == passTextField) { // ---------------------------------------------- EXTRAER TEXTO DE LOS TEXTFIELDS
 			if(nameTextField.getText() == null || passTextField.getText() == null) return;
 			
 			if(!nameTextField.getText().isEmpty() && !passTextField.getText().isEmpty()) {
 				String nombre = nameTextField.getText();
 				String pass = passTextField.getText();
 				
-				MainMenu mainMenu = new MainMenu(nombre, pass);
+				MainUI mainMenu = new MainUI(nombre, pass);
 				
 				setVisible(false);
 			} else { // ---------------------------------------------- SI LOS TEXTFIELDS NO ESTAN LLENOS
@@ -71,7 +66,7 @@ public class AuthenticationForm extends JFrame implements ActionListener{
 	
 	// ---------------------------------------------- MAINPANEL
 	private JPanel getMainPanel() {
-		mainPanel.setLayout(new BorderLayout());
+		JPanel mainPanel = new JPanel(new BorderLayout());
 		
 		// ---------------------------------------------- MARGEN DE ARRIBA
 		JLabel topMargin = new JLabel(" ");
@@ -100,6 +95,7 @@ public class AuthenticationForm extends JFrame implements ActionListener{
 		
 		nameTextField = new JTextField(20);
 		passTextField = new JTextField(20);
+		passTextField.addActionListener(this);
 		
 		textFieldsPanel.add(nameTextField);
 		textFieldsPanel.add(passTextField);

@@ -12,8 +12,14 @@ public class TitulacionRepository {
 		return titulaciones.size();
 	}
 	
-	public synchronized void add(Titulacion t) {
+	public synchronized boolean add(Titulacion t) {
+		Titulacion aux = get(t.getId());
+		
+		if(aux != null) return false;
+		
 		titulaciones.add(t);
+		
+		return true;
 	}
 	
 	public synchronized Titulacion get(String id) {		

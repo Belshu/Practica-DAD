@@ -7,4 +7,5 @@ public interface ICommunicationServer {
 	public void desconectar() throws IOException;
 	public String enviarComando(String comando) throws IOException;
 	public String recibirRespuesta();
+	public int getIdComunicacion();
 }

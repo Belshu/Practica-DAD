@@ -26,6 +26,7 @@ public class ClienteERP {
 	private final IRepository<Titulacion> repositorioTitulaciones;
 	private final IRepository<Matricula> repositorioMatriculas;
 	
+	private String respuestaServidor = "";
 	
 	// ---------------------------------------------- CONEXIÓN SOCKET CON SERVIDOR Y AUTENTICAR
 	public ClienteERP() throws IOException{
@@ -51,6 +52,7 @@ public class ClienteERP {
 	
 	public void cerrarSesion() throws IOException {
 		System.out.println("CERRANDO SESION...");
+		respuestaServidor = "CERRANDO SESION...";
 		autenticacion.cerrarSesion();
 	}
 	
@@ -73,13 +75,21 @@ public class ClienteERP {
 				String respuesta = comunicacion.enviarComando(mensaje);
 				ResponseParser parser = new ResponseParser(respuesta);
 				
-				if(parser.isOK()) System.out.println(parser.getMessage());
-				else if(parser.isFAILED()) System.out.println("ERROR: " + parser.getMessage());
+				if(parser.isOK()) {
+					System.out.println(parser.getMessage());
+					respuestaServidor = parser.getMessage();
+				}
+				else if(parser.isFAILED()) {
+					System.out.println("ERROR: " + parser.getMessage());
+					respuestaServidor = parser.getMessage();
+				}
 				else {
 					System.out.println("ERROR INESPERADO!");
+					respuestaServidor = "ERROR INESPERADO!";
 					return;
 				}
 			}
+			else respuestaServidor = "";
 		
 		} catch(IOException ex) {
 			System.out.println("ejecutarComando (ClienteERP): " + ex.getMessage());
@@ -91,7 +101,7 @@ public class ClienteERP {
 		Scanner S = new Scanner(System.in);
 		
 		if(partes.length < 2) {
-			System.out.println("COMANDO INCOMPLETO!");
+			respuestaServidor = "COMANDO INCOMPLETO!";
 			return;
 		}
 		
@@ -99,12 +109,12 @@ public class ClienteERP {
 		try {
 			switch(comando) {
 				case "ADDTIT":
-					Titulacion t = repositorioTitulaciones.crearObjeto(S, idObjeto);
-					System.out.println(repositorioTitulaciones.add(idObjeto, t));
+					Titulacion t = repositorioTitulaciones.crearObjeto(idObjeto);
+					respuestaServidor = repositorioTitulaciones.add(idObjeto, t);
 				break;
 				
 				default:
-					System.out.println("COMANDO NO RECONOCIDO");
+					respuestaServidor = "COMANDO NO RECONOCIDO";
 			}
 		} catch(Exception ex) {
 			System.out.println("gestionarAdd (ClienteERP): " + ex.getMessage());
@@ -115,7 +125,7 @@ public class ClienteERP {
 	private void gestionarGet(String comando, String [] partes) {
 		
 		if(partes.length < 2) {
-			System.out.println("COMANDO INCOMPLETO!\n");
+			respuestaServidor = "COMANDO INCOMPLETO!";
 			return;
 		}
 		
@@ -123,11 +133,15 @@ public class ClienteERP {
 			switch(comando) {
 				case "GETTIT":
 					Titulacion t = repositorioTitulaciones.getModel(partes[1]);
-					if(t != null) System.out.println(">> ID: " + t.getId() + "\t>> NOMBRE: " + t.getNombre());
+					if(t != null) {
+						respuestaServidor = "\t>> ID: " + t.getId() + "\t>> NOMBRE: " + t.getNombre();
+					} else {
+						respuestaServidor = "TITULACION NO ENCONTRADA -> " + partes[1];
+					}
 				break;
 				
 				default:
-					System.out.println("COMANDO NO RECONOCIDO");
+					respuestaServidor = "COMANDO NO RECONOCIDO";
 			}
 		} catch(IOException ex) {
 			System.out.println("gestionarGet (ClienteERP): " + ex.getMessage());
@@ -143,30 +157,46 @@ public class ClienteERP {
 		switch(comando) {
 			case "COUNTTIT":
 				total =  repositorioTitulaciones.modelSize();
-				if(total != -1) System.out.println("CANTIDAD DE TITULACIONES -> " + total);
+				if(total != -1) {
+					respuestaServidor = "CANTIDAD DE TITULACIONES -> " + total;
+				}
 			break;
 			
 			default:
-				System.out.println("COMANDO NO RECONOCIDO\n");
+				respuestaServidor = "COMANDO NO RECONOCIDO\n";
 		}
 	}
 	
 	// ---------------------------------------------- GESTOR DEL COMANDO SESIONES
 	private void imprimirSesiones(String mensaje) {
 		try {
-			String respuesta = comunicacion.enviarComando(mensaje);
+			respuestaServidor = comunicacion.enviarComando(mensaje);
 			
-			if(respuesta == null) {
+			if(respuestaServidor == null) {
 				System.out.println("Sin respuesta por parte del servidor.\n");
+				
 				return;
 			}
 			
-			ResponseParser parser = new ResponseParser(respuesta);
-			if(parser.isOK()) System.out.println("SESIONES ACTIVAS -> " + parser.getMessage());
+			ResponseParser parser = new ResponseParser(respuestaServidor);
+			if(parser.isOK()) {
+				respuestaServidor = "SESIONES ACTIVAS -> " + parser.getMessage();
+			} else if(parser.isFAILED()){
+				respuestaServidor = "ERROR SESIONES -> " + parser.getMessage();
+			} else {
+				respuestaServidor = "RESPUESTA DECONOCIDA";
+			}
 			
 		} catch (IOException e) {
 			System.out.println("imprimirSesiones (ClienteERP): " + e.getMessage());
 		}
-		
+	}
+	
+	public int getIdComando() {
+		return comunicacion.getIdComunicacion();
+	}
+	
+	public String getRespuestaServidor() {
+		return respuestaServidor;
 	}
 }

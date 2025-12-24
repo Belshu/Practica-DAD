@@ -42,7 +42,8 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 				if(respuesta2 != null) {
 					ResponseParser parser2 = new ResponseParser(respuesta2);
 					
-					if(parser2.isOK()) return "OBJETO ENVIADO CON EXITO!";
+					if(parser2.isOK()) return parser2.getMessage();
+					else if(parser2.isFAILED()) return "ERROR: " + parser2.getMessage();
 				}
 			} else if(parser.isFAILED()) return "ERROR: " + parser.getMessage();
 		} catch (IOException e) {

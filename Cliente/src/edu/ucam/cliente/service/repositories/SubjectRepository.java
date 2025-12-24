@@ -18,5 +18,11 @@ public class SubjectRepository extends BaseRepository <Asignatura>{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public Asignatura crearObjeto(String idObjeto) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }

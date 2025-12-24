@@ -19,4 +19,10 @@ public class MatRepository extends BaseRepository <Matricula>{
 		return null;
 	}
 
+	@Override
+	public Matricula crearObjeto(String idObjeto) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
