@@ -11,6 +11,9 @@ import edu.ucam.domain.Titulacion;
 import edu.ucam.servidor.commandHandlers.AddHandler;
 import edu.ucam.servidor.commandHandlers.CountHandler;
 import edu.ucam.servidor.commandHandlers.GetHandler;
+import edu.ucam.servidor.commandHandlers.ListHandler;
+import edu.ucam.servidor.commandHandlers.RemoveHandler;
+import edu.ucam.servidor.commandHandlers.UpdateHandler;
 import edu.ucam.servidor.config.ServerConfig;
 import edu.ucam.servidor.repositories.ERPDataManager;
 
@@ -178,6 +181,86 @@ public class ClientChannel extends Thread{
 			}
 			
 			pw.flush();
+		} else if (comando.startsWith("REMOVE")) { // -------------------------------- [ REMOVE ]
+		    if (!autenticado(idComando)) return;
+
+		    RemoveHandler handler = new RemoveHandler(dataManager);
+		    String respuesta = (String) handler.handle(idComando, partes);
+
+		    pw.println(respuesta);
+		    pw.flush();
+		} else if (comando.startsWith("LIST")) { // -------------------------------- [ LIST ]
+		    if (!autenticado(idComando)) return;
+
+		    // ---------------------------------------------- TOMAR LISTA CORRESPONDIENTE
+		    ListHandler handler = new ListHandler(dataManager);
+		    Object lista = handler.handle(idComando, partes);
+
+		    if (lista == null) {
+		    	System.out.println("RESPUESTA: FAILED " + idComando + " 404 LISTA_NO_DISPONIBLE");
+		        pw.println("FAILED " + idComando + " 404 LISTA_NO_DISPONIBLE");
+		        pw.flush();
+		        return;
+		    }
+		    
+		    if(lista instanceof String respuesta) {
+		    	System.out.println(respuesta);
+		    	pw.println(respuesta);
+		        pw.flush();
+		        return;
+		    }
+		    
+		    // ---------------------------------------------- ENVIAR PREOK
+		    int puertoDatos = dataChannel.puertoLocal();
+		    if(puertoDatos == -1) {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 405 FALLO_ESTABLECIENDO_PUERTO");
+		        pw.println("FAILED " + idComando + " 405 FALLO_ESTABLECIENDO_PUERTO");
+		        pw.flush();
+		        return;
+			}
+		    
+		    System.out.println("RESPUESTA: PREOK " + idComando + " 200 " + 
+		    		socketCliente.getLocalAddress().getHostAddress() + " " + puertoDatos);
+		    pw.println("PREOK " + idComando + " 200 " +
+		        socketCliente.getLocalAddress().getHostAddress() + " " + puertoDatos);
+		    pw.flush();
+
+		    // ---------------------------------------------- ESTABLECER CONEXION
+		    Socket ss = dataChannel.esperarConexion();
+		    if(ss == null) {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 405 FALLO_CONEXION_SOCKET");
+		        pw.println("FAILED " + idComando + " 405 FALLO_CONEXION_SOCKET");
+		        pw.flush();
+		        return;
+			}
+		    
+		    // ---------------------------------------------- ENVIAR OBJETO CORRESPONDIENTE
+		    if(dataChannel.enviarObjeto(ss, lista)) {
+				System.out.println("RESPUESTA: OK " + idComando + " 200 LISTA_ENVIADA");
+				 pw.println("OK " + idComando + " 200 LISTA_ENVIADA");
+			} else {
+				System.out.println("RESPUESTA: FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO");
+				pw.println("FAILED " + idComando + " 500 ERROR_ENVIO_OBJETO");
+			}
+		    
+		    pw.flush();
+		} else if (comando.startsWith("UPDATE")) { // ------------------------------ [ UPDATE ]
+		    if (!autenticado(idComando)) return;
+
+		    int puertoDatos = dataChannel.puertoLocal();
+		    pw.println("PREOK " + idComando + " 200 " +
+		        socketCliente.getLocalAddress().getHostAddress() + " " + puertoDatos);
+		    pw.flush();
+
+		    Socket ss = dataChannel.esperarConexion();
+		    Object obj = dataChannel.recibirObjeto(ss);
+
+		    UpdateHandler handler = new UpdateHandler(dataManager);
+		    handler.setModel(obj);
+
+		    String respuesta = (String) handler.handle(idComando, partes);
+		    pw.println(respuesta);
+		    pw.flush();
 		} else if(comando.startsWith("COUNT")) { // ---------------------------------------------- [ COUNT ]
 			if(!autenticado(idComando)) return; 
 			

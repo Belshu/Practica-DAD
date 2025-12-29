@@ -54,14 +54,54 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 	}
 
 	@Override
-	public void delete() throws IOException {
-		// TODO Auto-generated method stub
+	public void delete(String idObjeto) throws IOException {
+		String respuesta = comunicacion.enviarComando(removeComando + " " + idObjeto);
 		
+		if (respuesta == null) {
+			System.out.println("Sin respuesta del servidor.");
+			return; 
+		} 
+		
+		ResponseParser parser = new ResponseParser(respuesta); 
+		if (parser.isOK()) {
+			System.out.println("Eliminado correctamente.");
+		} else {
+			System.out.println("ERROR: " + parser.getMessage());
+		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<T> list() throws IOException, ClassNotFoundException {
-		// TODO Auto-generated method stub
+		try {
+			String respuesta = comunicacion.enviarComando(listComando);
+			
+			if(respuesta == null) {
+				System.out.println("Sin respuesta por parte del servidor: " + listComando);
+				return null;
+			}
+			
+			ResponseParser parser = new ResponseParser(respuesta);
+			if(parser.isPREOK()) {
+				Object obj = channelData.recibirObjeto(parser.getIp(), parser.getPort());
+				String respuesta2 = comunicacion.recibirRespuesta();
+				ResponseParser parser2 = new ResponseParser(respuesta2);
+				
+				if(parser2.isOK()) {
+					return (List<T>) obj;
+				}
+				
+				System.out.println("Fallo final tras PREOK: " + parser2.getCodigo() + " " + parser2.getMessage());
+			} else if(parser.isFAILED()) {
+				System.out.println("ERROR: " + parser.getMessage());
+			}
+			
+			System.out.println("No llegó el OK final tras PREOK");
+			return null;
+		} catch(IOException ex) {
+			System.out.println("List (BaseRepository): " + ex.getMessage());
+		}
+		
 		return null;
 	}
 

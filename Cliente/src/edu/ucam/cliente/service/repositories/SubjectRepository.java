@@ -15,8 +15,31 @@ public class SubjectRepository extends BaseRepository <Asignatura>{
 
 	@Override
 	public Asignatura crearObjeto(Scanner S, String idObjeto) {
-		// TODO Auto-generated method stub
-		return null;
+		String nombre = ""; 
+		int creditos = -1;
+		
+		// Pedir nombre
+		do {
+			System.out.print(">> Nombre asignatura: ");
+			nombre = S.nextLine().trim();
+			} while (nombre.isEmpty()); 
+		
+		// Pedir créditos
+		boolean valido = false;
+		while (!valido) { 
+			try { System.out.print(">> Créditos: "); 
+			creditos = Integer.parseInt(S.nextLine().trim());
+			valido = true; 
+			} catch (NumberFormatException ex) { 
+				System.out.println("Valor inválido. Introduce un número entero."); 
+				}
+			}
+		
+		Asignatura a = new Asignatura();
+		a.setId(idObjeto); 
+		a.setNombre(nombre);
+		a.setCreditos(creditos); 
+		return a;
 	}
 
 	@Override

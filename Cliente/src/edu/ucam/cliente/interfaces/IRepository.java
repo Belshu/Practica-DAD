@@ -8,7 +8,7 @@ import edu.ucam.domain.Titulacion;
 
 public interface IRepository <T>{
 	public String add(String idObjeto, T modelo) throws ClassNotFoundException;
-	public void delete() throws IOException;
+	public void delete(String idObjeto) throws IOException;
 	public List<T> list()throws IOException, ClassNotFoundException;
 	public void update(String idObjeto, T modelo) throws IOException, ClassNotFoundException;
 	public T getModel(String idObjeto) throws IOException, ClassNotFoundException;
