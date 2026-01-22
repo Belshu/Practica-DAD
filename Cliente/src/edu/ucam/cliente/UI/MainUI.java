@@ -95,6 +95,7 @@ public class MainUI extends JFrame implements ActionListener{
 	
 	private void sendCmd(String cmd) {
 		cmd = textField.getText().trim();
+		
 		clienteERP.ejecutarComando(cmd);
 		String respuesta = clienteERP.getRespuestaServidor();
 		if(respuesta.isEmpty()) respuesta = cmd;

@@ -12,8 +12,11 @@ private final List <Matricula> matriculas = new ArrayList<>();
 		return matriculas.size();
 	}
 	
-	public synchronized void add(Matricula m) {
+	public synchronized boolean add(Matricula m) {
+		if(get(m.getId()) != null) return false;
+		
 		matriculas.add(m);
+		return true;
 	}
 	
 	public synchronized Matricula get(String id) {

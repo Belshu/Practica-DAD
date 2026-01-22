@@ -13,12 +13,9 @@ public class TitulacionRepository {
 	}
 	
 	public synchronized boolean add(Titulacion t) {
-		Titulacion aux = get(t.getId());
-		
-		if(aux != null) return false;
+		if(get(t.getId()) != null) return false;
 		
 		titulaciones.add(t);
-		
 		return true;
 	}
 	

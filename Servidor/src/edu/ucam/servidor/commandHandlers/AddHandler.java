@@ -1,5 +1,7 @@
 package edu.ucam.servidor.commandHandlers;
 
+import edu.ucam.domain.Asignatura;
+import edu.ucam.domain.Matricula;
 import edu.ucam.domain.Titulacion;
 import edu.ucam.servidor.interfaces.ICommandHandler;
 import edu.ucam.servidor.repositories.ERPDataManager;
@@ -38,15 +40,33 @@ public class AddHandler implements ICommandHandler {
 			break;
 			
 			case "ADDMATRICULA":
-				
+				if(model instanceof Matricula m) {
+					m = (Matricula) model;
+					boolean added = data.getMatRepository().add(m);
+					
+					if(!added) {
+						System.out.println("RESPUSETA: FAILED " + idComando + " 409 ID_REPETIDO");
+						return "FAILED " + idComando + " 409 ID_REPETIDO";
+					}
+				} else {
+					System.out.println("RESPUSETA: FAILED " + idComando + " 400 OBJETO_INVALIDO");
+					return "FAILED " + idComando + " 400 OBJETO_INVALIDO";
+				}
 			break;
 			
 			case "ADDASIG":
-				
-			break;
-			
-			case "ADDALU":
-				
+				if(model instanceof Asignatura a) {
+					a = (Asignatura) model;
+					boolean added = data.getAsigRepository().add(a);
+					
+					if(!added) {
+						System.out.println("RESPUSETA: FAILED " + idComando + " 409 ID_REPETIDO");
+						return "FAILED " + idComando + " 409 ID_REPETIDO";
+					}
+				} else {
+					System.out.println("RESPUSETA: FAILED " + idComando + " 400 OBJETO_INVALIDO");
+					return "FAILED " + idComando + " 400 OBJETO_INVALIDO";
+				}
 			break;
 		
 			default:

@@ -1,23 +1,27 @@
 package edu.ucam.cliente.service.repositories;
 
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 
+import edu.ucam.cliente.UI.UISelection;
 import edu.ucam.cliente.interfaces.IChannelData;
 import edu.ucam.cliente.interfaces.ICommunicationServer;
+import edu.ucam.cliente.interfaces.IRepository;
 import edu.ucam.domain.Alumno;
 import edu.ucam.domain.Asignatura;
 import edu.ucam.domain.Matricula;
 
 public class MatRepository extends BaseRepository <Matricula>{
-	private SubjectRepository repositorioAsignaturas;
+	private IRepository<Asignatura> asigRepo;
 
-	public MatRepository(ICommunicationServer communication, IChannelData channelData) {
+	public MatRepository(ICommunicationServer communication, IChannelData channelData, IRepository<Asignatura> asigRepo) {
 		super(communication, channelData, "ADDMATRICULA", "REMOVEMATRICULA", "GETMATRICULA", 
 				"LISTMATRICULA", "COUNTMATRICULA", "UPDATEMATRICULA");
+		this.asigRepo = asigRepo;
 	}
 
 	@Override
@@ -39,15 +43,17 @@ public class MatRepository extends BaseRepository <Matricula>{
 		System.out.println("\nAsignaturas disponibles:"); 
 		List<Asignatura> disponibles = null;
 		try { 
-			disponibles = repositorioAsignaturas.list();
-			} catch (Exception ex) {
-				System.out.println("Error obteniendo asignaturas: " + ex.getMessage());
-				return null;
-				} 
+			disponibles = asigRepo.list();
+		} catch (Exception ex) {
+			System.out.println("Error obteniendo asignaturas: " + ex.getMessage());
+			return null;
+		}
+		
 		if (disponibles == null || disponibles.isEmpty()) {
 			System.out.println("No hay asignaturas creadas. No se puede crear matrícula."); 
 			return null;
-			} 
+		} 
+		
 		disponibles.forEach(a -> System.out.println(a.getId() + " - " + a.getNombre()) );
 		
 		// ---------------- SELECCIÓN DE ASIGNATURAS ---------------- 
@@ -57,7 +63,18 @@ public class MatRepository extends BaseRepository <Matricula>{
 		Hashtable<String, Asignatura> tabla = new Hashtable<>();
 		
 		for (String idAsig : linea.split(",")) { 
-			Asignatura a = repositorioAsignaturas.getModel(idAsig.trim());
+			Asignatura a = null;
+			
+			try {
+				a = asigRepo.getModel(idAsig.trim());
+			} catch (ClassNotFoundException e) {
+				System.out.println("Error crearObjeto (MatRepository): " + e.getMessage());
+				return null;
+			} catch (IOException e) {
+				System.out.println("Error crearObjeto (MatRepository): " + e.getMessage());
+				return null;
+			}
+			
 		if (a != null) {
 			tabla.put(a.getId(), a);
 			} else {
@@ -74,9 +91,56 @@ public class MatRepository extends BaseRepository <Matricula>{
 		Matricula m = new Matricula();
 		m.setId(idObjeto);
 		
+		
+		// ---------------- DATOS DEL ALUMNO ---------------- 
 		String datosAlumno = JOptionPane.showInputDialog(null, "[DNI] [nombre] [apellido1_apellido2]");
-		String [] partes = datosAlumno.split(datosAlumno.trim());
-		m.setAlumno(new Alumno(partes[0], partes[1], partes[2]));
+		
+		if(datosAlumno == null) return null;
+		datosAlumno = datosAlumno.trim();
+		if(datosAlumno.isEmpty()) return null;
+		
+		String [] partes = datosAlumno.split("\\s+");
+		
+		if(partes.length < 3 || partes.length > 4) {
+			System.out.println("FORMATO INVÁLIDO");
+			JOptionPane.showMessageDialog(null, "FORMATO INVÁLIDO", "ERROR", JOptionPane.ERROR_MESSAGE);
+			return null;
+		}
+		
+		try {
+			m.setAlumno(new Alumno(partes[0], partes[1], partes[2]));
+		} catch(Exception ex) {
+			System.out.println("Error crearObjeto (MatRepository): " + ex.getMessage());
+			return null;
+		}
+		
+		
+		// ---------------- DATOS DE LAS ASIGNATURAS ---------------- 
+		List<Asignatura> asigs = null;
+		try { 
+			asigs = asigRepo.list();
+		} catch (Exception ex) {
+			System.out.println("Error obteniendo asignaturas: " + ex.getMessage());
+			return null;
+		}
+		
+		if (asigs == null || asigs.isEmpty()) {
+			System.out.println("No hay asignaturas creadas. No se puede crear matrícula."); 
+			return null;
+		} 
+		
+		List<Asignatura> seleccionadas = UISelection.seleccionarVarios(null, "Seleccionar asignaturas", asigs, 
+				a -> a.getId() + " - " + a.getNombre());
+		
+		if (seleccionadas == null || seleccionadas.isEmpty()) {
+			System.out.println("No hay asignaturas seleccionadas. No se puede crear matrícula."); 
+			return null;
+		}
+		
+		Hashtable<String, Asignatura> tabla = new Hashtable<>();
+		for (Asignatura a : seleccionadas) tabla.put(a.getId(), a);
+		 
+		m.setAsignaturas(tabla);
 		
 		return m;
 	}

@@ -12,8 +12,11 @@ public class AsignaturaRepository {
 		return asignaturas.size();
 	}
 	
-	public synchronized void add(Asignatura a) {
+	public synchronized boolean add(Asignatura a) {
+		if(get(a.getId()) != null) return false;
+		
 		asignaturas.add(a);
+		return true;
 	}
 	
 	public synchronized Asignatura get(String id) {

@@ -23,9 +23,9 @@ import edu.ucam.domain.Titulacion;
 public class ClienteERP {
 	private final ICommunicationServer comunicacion;
 	private final IAuthentication autenticacion;
-	private final IRepository<Asignatura> repositorioAsignaturas;
-	private final IRepository<Titulacion> repositorioTitulaciones;
-	private final IRepository<Matricula> repositorioMatriculas;
+	private final IRepository<Asignatura> asigRepo;
+	private final IRepository<Titulacion> tituRepo;
+	private final IRepository<Matricula> matRepo;
 	
 	private String respuestaServidor = "";
 	
@@ -39,9 +39,9 @@ public class ClienteERP {
 		
 		
 		// ---------------------------------------------- REPOSITORIOS
-		this.repositorioAsignaturas = new SubjectRepository(comunicacion, channelData);
-		this.repositorioTitulaciones = new TituRepository(comunicacion, channelData);
-		this.repositorioMatriculas = new MatRepository(comunicacion, channelData);
+		this.asigRepo = new SubjectRepository(comunicacion, channelData);
+		this.matRepo = new MatRepository(comunicacion, channelData, asigRepo);
+		this.tituRepo = new TituRepository(comunicacion, channelData, asigRepo, matRepo);
 	}
 	
 	
@@ -114,16 +114,18 @@ public class ClienteERP {
 		try {
 			switch(comando) {
 				case "ADDTIT":
-					Titulacion t = repositorioTitulaciones.crearObjeto(idObjeto);
-					respuestaServidor = repositorioTitulaciones.add(idObjeto, t);
+					Titulacion t = tituRepo.crearObjeto(idObjeto);
+					respuestaServidor = tituRepo.add(idObjeto, t);
 				break;
+				
 				case "ADDASIG": 
-					Asignatura a = repositorioAsignaturas.crearObjeto(S, idObjeto); 
-					respuestaServidor = repositorioAsignaturas.add(idObjeto, a);
-				break; 
+					Asignatura a = asigRepo.crearObjeto(idObjeto); 
+					respuestaServidor = asigRepo.add(idObjeto, a);
+				break;
+				
 				case "ADDMATRICULA":
-					Matricula m = repositorioMatriculas.crearObjeto(S, idObjeto);
-					respuestaServidor = repositorioMatriculas.add(idObjeto, m);
+					Matricula m = matRepo.crearObjeto(idObjeto);
+					respuestaServidor = matRepo.add(idObjeto, m);
 				break;	
 				default:
 					respuestaServidor = "COMANDO NO RECONOCIDO";
@@ -144,35 +146,42 @@ public class ClienteERP {
 		try {
 			switch(comando) {
 				case "GETTIT":
-					Titulacion t = repositorioTitulaciones.getModel(partes[1]);
+					Titulacion t = tituRepo.getModel(partes[1]);
 					if(t != null) {
-						respuestaServidor = "\t>> ID: " + t.getId() + "\t>> NOMBRE: " + t.getNombre();
+						StringBuilder matriculas = new StringBuilder();
+						t.getMatriculas().forEach(ma -> matriculas.append(" > " + ma.getId() + " | " + ma.getAlumno().getDni() + "\n\t\t"));
+						
+						respuestaServidor = "\n\t>> ID: " + t.getId() + "\t>> NOMBRE: " + t.getNombre() + 
+								"\n\t>> MATRICULAS: \n\t\t" + matriculas.toString();
 					} else {
-						respuestaServidor = "TITULACION NO ENCONTRADA -> " + partes[1];
+						respuestaServidor = "TITULACION NO ENCONTRADA -> " + partes[1] + "\n";
 					}
 				break;
+				
 				case "GETASIG": 
-					Asignatura a = repositorioAsignaturas.getModel(partes[1]); 
+					Asignatura a = asigRepo.getModel(partes[1]); 
 					if(a != null) {
-						respuestaServidor = "\t>> ID: " + a.getId() + "\t>> NOMBRE: " + a.getNombre();
+						respuestaServidor = "\n\t>> ID: " + a.getId() + "\t>> NOMBRE: " + a.getNombre() + "\t>> CREDITOS: " + a.getCreditos();
 					} else {
-						respuestaServidor = "TITULACION NO ENCONTRADA -> " + partes[1];
+						respuestaServidor = "ASIGNATURA NO ENCONTRADA -> " + partes[1] + "\n";
 					}
 				break;
+				
 				case "GETMATRICULA":
-					Matricula m = repositorioMatriculas.getModel(partes[1]); 
-					if (m != null) { System.out.println(">> ID: " + m.getId());
+					Matricula m = matRepo.getModel(partes[1]); 
+					if (m != null) { System.out.println("\n>> ID: " + m.getId());
 					System.out.println();
 					
-					StringBuilder sb = new StringBuilder();
-					m.getAsignaturas().forEach(as -> sb.append(" - " + as.getNombre() + "\n"));
+					StringBuilder asignaturas = new StringBuilder();
+					m.getAsignaturas().forEach(as -> asignaturas.append(" > " + as.getNombre() + "\n\t"));
 					
-					respuestaServidor = "-> ALUMNO: " + m.getAlumno().getNombre() + " " + m.getAlumno().getApellidos() + "\n"
-							+ "-> ASIGNATURAS MATRICULADAS: " + sb.toString();					
+					respuestaServidor = "\n\t>> ALUMNO: " + m.getAlumno().getNombre() + " " + m.getAlumno().getApellidos() + " | "
+							+ ">> ASIGNATURAS MATRICULADAS: \n\t" + asignaturas.toString();
 					} else {
-						System.out.println("NO EXISTE MATRÍCULA CON ID " + m.getId());
-						} 
+						System.out.println("MATRICULA NO ENCONTRADA -> " + partes[1] + "\n");
+					}
 				break;
+				
 				default:
 					respuestaServidor = "COMANDO NO RECONOCIDO";
 			}
@@ -189,17 +198,17 @@ public class ClienteERP {
 		String cantidadMsg = null;
 		switch(comando) {
 			case "COUNTTIT":
-				total =  repositorioTitulaciones.modelSize();
+				total =  tituRepo.modelSize();
 				cantidadMsg = "CANTIDAD DE TITULACIONES -> ";
 				
 			break;
 			case "COUNTASIG":
-				total = repositorioAsignaturas.modelSize(); 
+				total = asigRepo.modelSize(); 
 				cantidadMsg = "CANTIDAD DE ASIGNATURAS -> ";
 			break;
 				
 			case "COUNTMATRICULA": 
-				total = repositorioMatriculas.modelSize();
+				total = matRepo.modelSize();
 				cantidadMsg = "CANTIDAD DE MATRICULAS -> ";
 			break;
 			
@@ -208,92 +217,91 @@ public class ClienteERP {
 		}
 		
 		if(total != -1 && cantidadMsg != null) {
-			respuestaServidor = cantidadMsg + " " + total;
+			respuestaServidor = cantidadMsg + " " + total + "\n";
 		}
 	}
 	
 	// ---------------------------------------------- GESTOR DEL COMANDO LIST
-		private void gestionarList(String comando) {
-			StringBuilder sb = new StringBuilder();
+	private void gestionarList(String comando) {
+		StringBuilder sb = new StringBuilder();
 			
-		    try {
-		        switch (comando) {
-		            case "LISTTIT":
-		                List<Titulacion> lt = repositorioTitulaciones.list();
-		                if(lt == null) {
-		                	respuestaServidor = "ERROR al inicializar las titulaciones";
-		                	return;
-		                }
-		                
-		                lt.forEach(t -> sb.append(t.getId() + " - " + t.getNombre() + "\n"));
-		            break;
-
-		            case "LISTASIG":
-		                List<Asignatura> la = repositorioAsignaturas.list();
-		                if(la == null) {
-		                	respuestaServidor = "ERROR al inicializar las asignaturas";
-		                	return;
-		                }
-		                
-		                la.forEach(a -> sb.append(a.getId() + " - " + a.getNombre() + "\n"));
-		            break;
-
-		            case "LISTMATRICULA":
-		                List<Matricula> lm = repositorioMatriculas.list();
-		                if(lm == null) {
-		                	respuestaServidor = "ERROR al inicializar las matriculas";
-		                	return;
-		                }
-		                
-		                lm.forEach(m -> sb.append(m.getId() + " - " + m.getAlumno().getNombre() + "\n"));
-		            break;
-
-		            default:
-		                System.out.println("COMANDO NO RECONOCIDO");
-		        }
-		        
-		        if(!sb.isEmpty()) respuestaServidor = sb.toString();
-		        
-		    } catch (Exception ex) {
-		        System.out.println("gestionarList (ClienteERP): " + ex.getMessage());
-		    }
+	    try {
+	    	switch (comando) {
+	    		case "LISTTIT":
+	    			List<Titulacion> lt = tituRepo.list();
+	    			if(lt == null) {
+	    				respuestaServidor = "ERROR al inicializar las titulaciones";
+	    				return;
+	    			}
+	    			lt.forEach(t -> sb.append(">> " + t.getId() + " - " + t.getNombre() + "\n\t"));
+		            
+	    		break;
+	    		case "LISTASIG":
+	    			List<Asignatura> la = asigRepo.list();
+	    			if(la == null) {
+	    				respuestaServidor = "ERROR al inicializar las asignaturas";	
+	    				return;
+	    			}
+	    			la.forEach(a -> sb.append(">> " + a.getId() + " - " + a.getNombre() + "\n\t"));
+	    		break;
+	    		
+	    		case "LISTMATRICULA":
+	    			List<Matricula> lm = matRepo.list();
+	    			if(lm == null) {    	
+	    				respuestaServidor = "ERROR al inicializar las matriculas";
+	    				return;
+	    			}
+	    			lm.forEach(m -> sb.append(">> " + m.getId() + " - " + m.getAlumno().getNombre() + 
+	    					" (" + m.getAlumno().getDni() + ")" + "\n\t"));
+	    		break;
+	    		default:
+	    			System.out.println("COMANDO NO RECONOCIDO");
+	    	}
+	    	
+	    	if(!sb.isEmpty()) respuestaServidor = "\n\t" + sb.toString();
+	    } catch (Exception ex) {
+	    	System.out.println("gestionarList (ClienteERP): " + ex.getMessage());
+	    }
+	}
+	
+	// ---------------------------------------------- GESTOR DEL COMANDO REMOVE
+	private void gestionarRemove(String comando, String[] partes) {
+		if (partes.length < 2) {
+			System.out.println("COMANDO INCOMPLETO");
+			return;
 		}
 		
-		// ---------------------------------------------- GESTOR DEL COMANDO REMOVE
-		private void gestionarRemove(String comando, String[] partes) {
-		    if (partes.length < 2) {
-		        System.out.println("COMANDO INCOMPLETO");
-		        return;
-		    }
-
-		    try {
-		        switch (comando) {
-		            case "REMOVETIT":
-		                repositorioTitulaciones.delete(partes[1]);
-		            break;
-
-		            case "REMOVEASIG":
-		                repositorioAsignaturas.delete(partes[1]);
-		            break;
-
-		            case "REMOVEMATRICULA":
-		                repositorioMatriculas.delete(partes[1]);
-		            break;
-
-		            default:
-		            	respuestaServidor = "COMANDO NO RECONOCIDO";
-		        }
-		    } catch (Exception ex) {
-		        System.out.println("gestionarRemove (ClienteERP): " + ex.getMessage());
-		    }
+		try {
+			switch (comando) {
+				case "REMOVETIT":
+					tituRepo.delete(partes[1]);
+					respuestaServidor = "TITULACION ELIMINADA \n";
+				break;
+				
+				case "REMOVEASIG":
+					asigRepo.delete(partes[1]);
+					respuestaServidor = "ASIGNATURA ELIMINADA \n";
+				break;
+				
+				case "REMOVEMATRICULA":
+					matRepo.delete(partes[1]);
+					respuestaServidor = "MATRICULA ELIMINADA \n";
+				break;
+				
+				default:
+					respuestaServidor = "COMANDO NO RECONOCIDO\n";
+			}
+		} catch (Exception ex) {
+			System.out.println("gestionarRemove (ClienteERP): " + ex.getMessage());
 		}
+	}
 
 		// ---------------------------------------------- GESTOR DEL COMANDO UPDATE
 		private void gestionarUpdate(String comando, String[] partes) {
 		    Scanner S = new Scanner(System.in);
 
 		    if (partes.length < 2) {
-		        System.out.println("COMANDO INCOMPLETO");
+		        System.out.println("COMANDO INCOMPLETO\n");
 		        return;
 		    }
 
@@ -302,22 +310,22 @@ public class ClienteERP {
 		    try {
 		        switch (comando) {
 		            case "UPDATETIT":
-		                Titulacion t = repositorioTitulaciones.crearObjeto(S, id);
-		                repositorioTitulaciones.update(id, t);
+		                Titulacion t = tituRepo.crearObjeto(S, id);
+		                tituRepo.update(id, t);
 		            break;
 
 		            case "UPDATEASIG":
-		                Asignatura a = repositorioAsignaturas.crearObjeto(S, id);
-		                repositorioAsignaturas.update(id, a);
+		                Asignatura a = asigRepo.crearObjeto(S, id);
+		                asigRepo.update(id, a);
 		            break;
 
 		            case "UPDATEMATRICULA":
-		                Matricula m = repositorioMatriculas.crearObjeto(S, id);
-		                repositorioMatriculas.update(id, m);
+		                Matricula m = matRepo.crearObjeto(S, id);
+		                matRepo.update(id, m);
 		            break;
 
 		            default:
-		                System.out.println("COMANDO NO RECONOCIDO");
+		                System.out.println("COMANDO NO RECONOCIDO\n");
 		        }
 		    } catch (Exception ex) {
 		        System.out.println("gestionarUpdate: " + ex.getMessage());
@@ -337,11 +345,11 @@ public class ClienteERP {
 			
 			ResponseParser parser = new ResponseParser(respuestaServidor);
 			if(parser.isOK()) {
-				respuestaServidor = "SESIONES ACTIVAS -> " + parser.getMessage();
+				respuestaServidor = "SESIONES ACTIVAS -> " + parser.getMessage() + "\n";
 			} else if(parser.isFAILED()){
-				respuestaServidor = "ERROR SESIONES -> " + parser.getMessage();
+				respuestaServidor = "ERROR SESIONES -> " + parser.getMessage() + "\n";
 			} else {
-				respuestaServidor = "RESPUESTA DESCONOCIDA";
+				respuestaServidor = "RESPUESTA DESCONOCIDA" + "\n";
 			}
 			
 		} catch (IOException e) {
@@ -368,9 +376,9 @@ public class ClienteERP {
 			if(parser.isOK()) {
 				respuestaServidor = parser.getMessage();
 			} else if(parser.isFAILED()){
-				respuestaServidor = "ERROR -> " + parser.getMessage();
+				respuestaServidor = "ERROR -> " + parser.getMessage() + "\n";
 			} else {
-				respuestaServidor = "RESPUESTA DESCONOCIDA";
+				respuestaServidor = "RESPUESTA DESCONOCIDA" + "\n";
 			}
 		} catch(IOException ex) {
 			System.out.println("imprimirSesiones (ClienteERP): " + ex.getMessage());

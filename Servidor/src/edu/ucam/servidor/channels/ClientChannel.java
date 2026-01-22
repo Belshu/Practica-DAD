@@ -143,7 +143,7 @@ public class ClientChannel extends Thread{
 		} else if(comando.startsWith("GET")) { // ---------------------------------------------- [ GET ]
 			if(!autenticado(idComando)) return; 
 
-			GetHandler getHandler = new GetHandler(dataManager, dataChannel);
+			GetHandler getHandler = new GetHandler(dataManager);
 			// ---------------------------------------------- GET OBJETO CORRESPONDIENTE
 			Object obj = getHandler.handle(idComando, partes);
 			if(obj == null) {

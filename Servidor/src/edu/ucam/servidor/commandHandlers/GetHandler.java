@@ -11,14 +11,10 @@ import edu.ucam.servidor.repositories.ERPDataManager;
 
 public class GetHandler implements ICommandHandler{
 	private ERPDataManager data;
-	private DataChannel dataChannel;
-	private Titulacion t;
-	
 	
 	// ---------------------------------------------- CONSTRUCTOR
-	public GetHandler(ERPDataManager data, DataChannel dataChannel) {
+	public GetHandler(ERPDataManager data) {
 		this.data = data;
-		this.dataChannel = dataChannel;
 	}
 	
 	// partes [0] = idComando;
@@ -33,10 +29,13 @@ public class GetHandler implements ICommandHandler{
 		
 		switch(comando) {
 			case "GETTIT":
-				return t = data.getTitulacionRepository().get(id);
+				return data.getTitulacionRepository().get(id);
 				
 			case "GETASIG":
 				return data.getAsigRepository().get(id);
+				
+			case "GETMATRICULA":
+				return data.getMatRepository().get(id);
 				
 			default:
 				return null;

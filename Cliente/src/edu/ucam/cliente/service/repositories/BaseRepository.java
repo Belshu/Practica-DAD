@@ -123,7 +123,6 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 				return null;
 			}
 			
-			
 			// ---------------------------------------------- PARSEAR PREOK PARA EXTRAER IP Y PUERTO
 			ResponseParser parser = new ResponseParser(respuesta);
 			if(parser.isPREOK()) {
