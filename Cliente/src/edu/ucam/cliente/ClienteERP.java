@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
+
 import edu.ucam.cliente.interfaces.IAuthentication;
 import edu.ucam.cliente.interfaces.IChannelData;
 import edu.ucam.cliente.interfaces.ICommunicationServer;
@@ -103,8 +105,6 @@ public class ClienteERP {
 	
 	// ---------------------------------------------- GESTOR DEL COMANDO ADD
 	private void gestionarAdd(String comando, String [] partes) {
-		Scanner S = new Scanner(System.in);
-		
 		if(partes.length < 2) {
 			respuestaServidor = "COMANDO INCOMPLETO!";
 			return;
@@ -137,7 +137,6 @@ public class ClienteERP {
 	
 	// ---------------------------------------------- GESTOR DEL COMANDO GET
 	private void gestionarGet(String comando, String [] partes) {
-		
 		if(partes.length < 2) {
 			respuestaServidor = "COMANDO INCOMPLETO!";
 			return;
@@ -255,7 +254,7 @@ public class ClienteERP {
 	    					" (" + m.getAlumno().getDni() + ")" + "\n\t"));
 	    		break;
 	    		default:
-	    			System.out.println("COMANDO NO RECONOCIDO");
+	    			respuestaServidor = "COMANDO NO RECONOCIDO\n";
 	    	}
 	    	
 	    	if(!sb.isEmpty()) respuestaServidor = "\n\t" + sb.toString();
@@ -273,64 +272,147 @@ public class ClienteERP {
 		
 		try {
 			switch (comando) {
-				case "REMOVETIT":
-					tituRepo.delete(partes[1]);
-					respuestaServidor = "TITULACION ELIMINADA \n";
-				break;
-				
-				case "REMOVEASIG":
-					asigRepo.delete(partes[1]);
-					respuestaServidor = "ASIGNATURA ELIMINADA \n";
-				break;
-				
-				case "REMOVEMATRICULA":
-					matRepo.delete(partes[1]);
-					respuestaServidor = "MATRICULA ELIMINADA \n";
-				break;
-				
-				default:
-					respuestaServidor = "COMANDO NO RECONOCIDO\n";
+				case "REMOVETIT": respuestaServidor = tituRepo.delete(partes[1]); break;
+				case "REMOVEASIG": respuestaServidor = asigRepo.delete(partes[1]); break;
+				case "REMOVEMATRICULA": respuestaServidor = matRepo.delete(partes[1]); break;
+				default: respuestaServidor = "COMANDO NO RECONOCIDO\n";
 			}
 		} catch (Exception ex) {
 			System.out.println("gestionarRemove (ClienteERP): " + ex.getMessage());
 		}
 	}
-
-		// ---------------------------------------------- GESTOR DEL COMANDO UPDATE
-		private void gestionarUpdate(String comando, String[] partes) {
-		    Scanner S = new Scanner(System.in);
-
-		    if (partes.length < 2) {
-		        System.out.println("COMANDO INCOMPLETO\n");
-		        return;
-		    }
-
-		    String id = partes[1];
-
-		    try {
-		        switch (comando) {
-		            case "UPDATETIT":
-		                Titulacion t = tituRepo.crearObjeto(S, id);
-		                tituRepo.update(id, t);
-		            break;
-
-		            case "UPDATEASIG":
-		                Asignatura a = asigRepo.crearObjeto(S, id);
-		                asigRepo.update(id, a);
-		            break;
-
-		            case "UPDATEMATRICULA":
-		                Matricula m = matRepo.crearObjeto(S, id);
-		                matRepo.update(id, m);
-		            break;
-
-		            default:
-		                System.out.println("COMANDO NO RECONOCIDO\n");
-		        }
-		    } catch (Exception ex) {
-		        System.out.println("gestionarUpdate: " + ex.getMessage());
-		    }
+	
+	// ---------------------------------------------- GESTOR DEL COMANDO UPDATE
+	private void gestionarUpdate(String comando, String[] partes) {
+		if (partes.length < 2) {
+			System.out.println("COMANDO INCOMPLETO\n");
+			return;
 		}
+		
+		String id = partes[1];
+		String nombre = null;
+		
+		try {
+			switch (comando) {
+				// ---------------------------------------------- TITULACION
+				case "UPDATETIT":
+					Titulacion t = tituRepo.getModel(id);
+					if(t == null) {
+						respuestaServidor = "TITULACION NO ENCONTRADA -> " + id + "\n";
+				        return;
+					}
+					
+					nombre = JOptionPane.showInputDialog(null, "Nombre:", t.getNombre());
+					if(nombre == null) {
+						respuestaServidor = "UPDATE CANCELADO\n";
+						return;
+					}
+					
+					nombre = nombre.trim();
+					if(nombre.isEmpty()) {
+						respuestaServidor = "NOMBRE NO VÁLIDO\n";
+					    return;
+					}
+					
+					t.setNombre(nombre);
+					respuestaServidor = tituRepo.update(id, t) + "\n";
+				break;
+				
+				// ---------------------------------------------- ASIGNATURA
+				case "UPDATEASIG":
+					Asignatura a = asigRepo.getModel(id);
+					if(a == null) {
+						respuestaServidor = "ASIGNATURA NO ENCONTRADA -> " + id + "\n";
+				        return;
+					}
+					
+					nombre = JOptionPane.showInputDialog(null, "Nombre:", a.getNombre());
+					String creditosStr = JOptionPane.showInputDialog(null, "Créditos:", String.valueOf(a.getCreditos()));
+					
+					if(creditosStr == null || nombre == null) { 
+						respuestaServidor = "UPDATE CANCELADO\n"; 
+						return;
+					}
+					
+					nombre = nombre.trim();
+					if(nombre.isEmpty()) {
+						respuestaServidor = "NOMBRE NO VÁLIDO\n";
+					    return;
+					}
+					creditosStr = creditosStr.trim();
+					if(creditosStr.isEmpty()) {
+						respuestaServidor = "CRÉDITOS NO VÁLIDOS\n";
+					    return;
+					}
+					
+					int creditos;
+					try {
+						creditos = Integer.parseInt(creditosStr);
+						if(creditos < 0) {
+							respuestaServidor = "CRÉDITOS NO VÁLIDOS\n";
+					        return;
+						}
+						
+					} catch (Exception e) {
+				        respuestaServidor = "CRÉDITOS NO VÁLIDOS\n";
+				        return;
+				    }
+					
+					a.setNombre(nombre);
+					a.setCreditos(creditos);
+					
+					respuestaServidor = asigRepo.update(id, a) + "\n";
+				break;
+				
+				// ---------------------------------------------- MATRICULA
+				case "UPDATEMATRICULA":
+					Matricula m = matRepo.getModel(id);
+					if(m == null) {
+						respuestaServidor = "MATRICULA NO ENCONTRADA -> " + id + "\n";
+				        return;
+					}
+					
+					String dni = JOptionPane.showInputDialog(null, "DNI del alumno:", m.getAlumno().getDni());
+					nombre = JOptionPane.showInputDialog(null, "Nombre del alumno:", m.getAlumno().getNombre());
+					String apellidos = JOptionPane.showInputDialog(null, "Apellidos del alumno:", m.getAlumno().getApellidos());
+					
+					if(dni == null || nombre == null || apellidos == null) { 
+						respuestaServidor = "UPDATE CANCELADO\n"; 
+						return;
+					}
+					
+					dni = dni.trim();
+					if(nombre.isEmpty()) {
+						respuestaServidor = "DNI NO VÁLIDO\n";
+					    return;
+					}
+					
+					nombre = nombre.trim();
+					if(nombre.isEmpty()) {
+						respuestaServidor = "NOMBRE NO VÁLIDO\n";
+					    return;
+					}
+					
+					apellidos = apellidos.trim();
+					if(apellidos.isEmpty()) {
+						respuestaServidor = "APELLIDOS NO VÁLIDOS\n";
+					    return;
+					}
+					
+					m.getAlumno().setDni(dni);
+					m.getAlumno().setNombre(nombre);
+					m.getAlumno().setApellidos(apellidos);
+					
+					respuestaServidor = matRepo.update(id, m) + "\n";
+		        break;
+		        
+				default:
+					respuestaServidor = "COMANDO NO RECONOCIDO\n";
+		    }
+		} catch (Exception ex) {
+			System.out.println("gestionarUpdate: " + ex.getMessage());
+		}
+	}
 	
 	// ---------------------------------------------- GESTOR DEL COMANDO SESIONES
 	private void imprimirSesiones(String mensaje) {
@@ -357,7 +439,6 @@ public class ClienteERP {
 		}
 	}
 	
-	
 	// ---------------------------------------------- GUARDAR INFORMACION DEL SERVIDOR
 	private void guardarInformacion(String mensaje) {
 		try {
@@ -370,9 +451,7 @@ public class ClienteERP {
 			}
 			
 			ResponseParser parser = new ResponseParser(respuestaServidor);
-			
 			System.out.println(respuestaServidor);
-			
 			if(parser.isOK()) {
 				respuestaServidor = parser.getMessage();
 			} else if(parser.isFAILED()){

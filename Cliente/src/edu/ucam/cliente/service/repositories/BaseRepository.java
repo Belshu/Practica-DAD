@@ -54,20 +54,16 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 	}
 
 	@Override
-	public void delete(String idObjeto) throws IOException {
+	public String delete(String idObjeto) throws IOException {
 		String respuesta = comunicacion.enviarComando(removeComando + " " + idObjeto);
 		
 		if (respuesta == null) {
-			System.out.println("Sin respuesta del servidor.");
-			return; 
+			return "Sin respuesta del servidor."; 
 		} 
 		
 		ResponseParser parser = new ResponseParser(respuesta); 
-		if (parser.isOK()) {
-			System.out.println("Eliminado correctamente.");
-		} else {
-			System.out.println("ERROR: " + parser.getMessage());
-		}
+		if (parser.isOK()) return parser.getMessage();
+		else  return "ERROR: " + parser.getMessage();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -106,9 +102,27 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 	}
 
 	@Override
-	public void update(String id, T modelo) throws IOException, ClassNotFoundException {
-		// TODO Auto-generated method stub
+	public String update(String idObjeto, T modelo) throws IOException, ClassNotFoundException {
+		String respuesta = comunicacion.enviarComando(updateComando + " " + idObjeto);
 		
+		if(respuesta == null) return "Sin respuesta del servidor.";
+		
+		
+		ResponseParser parser = new ResponseParser(respuesta);
+		if(parser.isPREOK()) {
+			channelData.enviarObjeto(parser.getIp(), parser.getPort(), modelo);
+			
+			String respuesta2 = comunicacion.recibirRespuesta();
+			if(respuesta2 == null) return "No llegó respuesta final tras PREOK";
+			
+			ResponseParser parser2 = new ResponseParser(respuesta2);
+			if(parser2.isOK()) return parser2.getMessage();
+			if(parser2.isFAILED()) return "ERROR: " + parser2.getMessage();
+		}
+		
+		if(parser.isFAILED()) return parser.getMessage();
+		
+		return "NO SE PUDO ENVIAR EL OBJETO";
 	}
 
 	@SuppressWarnings("unchecked")

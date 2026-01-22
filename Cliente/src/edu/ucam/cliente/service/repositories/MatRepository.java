@@ -117,7 +117,7 @@ public class MatRepository extends BaseRepository <Matricula>{
 		
 		// ---------------- DATOS DE LAS ASIGNATURAS ---------------- 
 		List<Asignatura> asigs = null;
-		try { 
+		try {
 			asigs = asigRepo.list();
 		} catch (Exception ex) {
 			System.out.println("Error obteniendo asignaturas: " + ex.getMessage());
