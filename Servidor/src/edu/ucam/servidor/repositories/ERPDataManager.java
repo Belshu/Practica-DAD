@@ -69,13 +69,8 @@ public class ERPDataManager {
 		} finally {
 			if(state != null) {
 				tituRepository.setAll(state.titulaciones);
-				
-				// ---------------------------------------------- AÑADIR EL RESTO
-				// ---------------------------------------------- 
-				// ----------------------------------------------
-				// ----------------------------------------------
-				// ----------------------------------------------
-				// ----------------------------------------------
+				matRepository.setAll(state.matriculas);
+				asigRepository.setAll(state.asignaturas);
 			}
 		}
 	}

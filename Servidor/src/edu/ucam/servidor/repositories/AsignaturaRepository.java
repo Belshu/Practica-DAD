@@ -38,4 +38,11 @@ public class AsignaturaRepository {
 		
 		return true;
 	}
+	
+	public synchronized void setAll(java.util.List<Asignatura> nuevas) {
+		if(nuevas != null) {
+			asignaturas.clear();
+			asignaturas.addAll(nuevas);
+		}
+	}
 }

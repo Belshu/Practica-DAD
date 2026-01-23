@@ -38,4 +38,11 @@ private final List <Matricula> matriculas = new ArrayList<>();
 		
 		return true;
 	}
+	
+	public synchronized void setAll(java.util.List<Matricula> nuevas) {
+		if(nuevas != null) {
+			matriculas.clear();
+			matriculas.addAll(nuevas);
+		}
+	}
 }
