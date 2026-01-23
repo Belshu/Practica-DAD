@@ -54,14 +54,14 @@ public class ClienteERP {
 	}
 	
 	public void cerrarSesion() throws IOException {
-		System.out.println("CERRANDO SESION...");
-		respuestaServidor = "CERRANDO SESION...";
+		respuestaServidor = "CERRANDO SESION...\n";
 		autenticacion.cerrarSesion();
 	}
 	
 	
 	// ---------------------------------------------- GESTOR DE COMANDOS
 	public void ejecutarComando(String mensaje) {
+		respuestaServidor = "\n";
 		
 		if(mensaje.isEmpty()) return;
 		
@@ -82,31 +82,23 @@ public class ClienteERP {
 				String respuesta = comunicacion.enviarComando(mensaje);
 				ResponseParser parser = new ResponseParser(respuesta);
 				
-				if(parser.isOK()) {
-					System.out.println(parser.getMessage());
-					respuestaServidor = parser.getMessage();
-				}
-				else if(parser.isFAILED()) {
-					System.out.println("ERROR: " + parser.getMessage());
-					respuestaServidor = parser.getMessage();
-				}
+				if(parser.isOK()) respuestaServidor = parser.getMessage();
+				else if(parser.isFAILED()) respuestaServidor = "ERROR: " + parser.getMessage() + "\n";
 				else {
-					System.out.println("ERROR INESPERADO!");
-					respuestaServidor = "ERROR INESPERADO!";
+					respuestaServidor = "ERROR INESPERADO!\n";
 					return;
 				}
 			}
-			else respuestaServidor = "";
-		
+			else respuestaServidor = "\n";
 		} catch(IOException ex) {
-			System.out.println("ejecutarComando (ClienteERP): " + ex.getMessage());
+			respuestaServidor = "ejecutarComando (ClienteERP): " + ex.getMessage() + "\n"; 
 		}
 	}
 	
 	// ---------------------------------------------- GESTOR DEL COMANDO ADD
 	private void gestionarAdd(String comando, String [] partes) {
 		if(partes.length < 2) {
-			respuestaServidor = "COMANDO INCOMPLETO!";
+			respuestaServidor = "COMANDO INCOMPLETO!\n";
 			return;
 		}
 		
@@ -128,17 +120,17 @@ public class ClienteERP {
 					respuestaServidor = matRepo.add(idObjeto, m);
 				break;	
 				default:
-					respuestaServidor = "COMANDO NO RECONOCIDO";
+					respuestaServidor = "COMANDO NO RECONOCIDO\n";
 			}
 		} catch(Exception ex) {
-			System.out.println("gestionarAdd (ClienteERP): " + ex.getMessage());
+			respuestaServidor = "gestionarAdd (ClienteERP): " + ex.getMessage() + "\n"; 
 		}
 	}
 	
 	// ---------------------------------------------- GESTOR DEL COMANDO GET
 	private void gestionarGet(String comando, String [] partes) {
 		if(partes.length < 2) {
-			respuestaServidor = "COMANDO INCOMPLETO!";
+			respuestaServidor = "COMANDO INCOMPLETO!\n";
 			return;
 		}
 		
@@ -148,21 +140,23 @@ public class ClienteERP {
 					Titulacion t = tituRepo.getModel(partes[1]);
 					if(t != null) {
 						StringBuilder matriculas = new StringBuilder();
-						t.getMatriculas().forEach(ma -> matriculas.append(" > " + ma.getId() + " | " + ma.getAlumno().getDni() + "\n\t\t"));
+						t.getMatriculas().forEach(ma -> matriculas.append(" > " + ma.getId() + 
+								" | " + ma.getAlumno().getDni() + "\n\t\t"));
 						
 						respuestaServidor = "\n\t>> ID: " + t.getId() + "\t>> NOMBRE: " + t.getNombre() + 
 								"\n\t>> MATRICULAS: \n\t\t" + matriculas.toString();
 					} else {
-						respuestaServidor = "TITULACION NO ENCONTRADA -> " + partes[1] + "\n";
+						respuestaServidor = "TITULACION NO ENCONTRADA [" + partes[1] + "]\n";
 					}
 				break;
 				
 				case "GETASIG": 
 					Asignatura a = asigRepo.getModel(partes[1]); 
 					if(a != null) {
-						respuestaServidor = "\n\t>> ID: " + a.getId() + "\t>> NOMBRE: " + a.getNombre() + "\t>> CREDITOS: " + a.getCreditos();
+						respuestaServidor = "\n\t>> ID: " + a.getId() + "\t>> NOMBRE: " + a.getNombre() + 
+								"\t>> CREDITOS: " + a.getCreditos() + "\n";
 					} else {
-						respuestaServidor = "ASIGNATURA NO ENCONTRADA -> " + partes[1] + "\n";
+						respuestaServidor = "ASIGNATURA NO ENCONTRADA [" + partes[1] + "]\n";
 					}
 				break;
 				
@@ -174,20 +168,21 @@ public class ClienteERP {
 					StringBuilder asignaturas = new StringBuilder();
 					m.getAsignaturas().forEach(as -> asignaturas.append(" > " + as.getNombre() + "\n\t"));
 					
-					respuestaServidor = "\n\t>> ALUMNO: " + m.getAlumno().getNombre() + " " + m.getAlumno().getApellidos() + " | "
-							+ ">> ASIGNATURAS MATRICULADAS: \n\t" + asignaturas.toString();
+					respuestaServidor = "\n\t>> ALUMNO: " + m.getAlumno().getNombre() + 
+							" " + m.getAlumno().getApellidos() + "\n\t" + asignaturas.toString();
 					} else {
-						System.out.println("MATRICULA NO ENCONTRADA -> " + partes[1] + "\n");
+						System.out.println();
+						respuestaServidor = "MATRICULA NO ENCONTRADA [" + partes[1] + "]\n"; 
 					}
 				break;
 				
 				default:
-					respuestaServidor = "COMANDO NO RECONOCIDO";
+					respuestaServidor = "COMANDO NO RECONOCIDO\n";
 			}
 		} catch(IOException ex) {
-			System.out.println("gestionarGet (ClienteERP): " + ex.getMessage());
+			respuestaServidor = "gestionarGet (ClienteERP): " + ex.getMessage() + "\n"; 
 		} catch (ClassNotFoundException ex) {
-			System.out.println("gestionarGet (ClienteERP): " + ex.getMessage());
+			respuestaServidor = "gestionarGet (ClienteERP): " + ex.getMessage() + "\n"; 		
 		}
 	}
 	
@@ -213,11 +208,12 @@ public class ClienteERP {
 			
 			default:
 				respuestaServidor = "COMANDO NO RECONOCIDO\n";
+				return;
 		}
 		
 		if(total != -1 && cantidadMsg != null) {
 			respuestaServidor = cantidadMsg + " " + total + "\n";
-		}
+		} else if(total == -1) respuestaServidor = "ERROR INESPERADO!\n";
 	}
 	
 	// ---------------------------------------------- GESTOR DEL COMANDO LIST
@@ -229,7 +225,7 @@ public class ClienteERP {
 	    		case "LISTTIT":
 	    			List<Titulacion> lt = tituRepo.list();
 	    			if(lt == null) {
-	    				respuestaServidor = "ERROR al inicializar las titulaciones";
+	    				respuestaServidor = "ERROR al inicializar las titulaciones\n";
 	    				return;
 	    			}
 	    			lt.forEach(t -> sb.append(">> " + t.getId() + " - " + t.getNombre() + "\n\t"));
@@ -238,7 +234,7 @@ public class ClienteERP {
 	    		case "LISTASIG":
 	    			List<Asignatura> la = asigRepo.list();
 	    			if(la == null) {
-	    				respuestaServidor = "ERROR al inicializar las asignaturas";	
+	    				respuestaServidor = "ERROR al inicializar las asignaturas\n";	
 	    				return;
 	    			}
 	    			la.forEach(a -> sb.append(">> " + a.getId() + " - " + a.getNombre() + "\n\t"));
@@ -247,11 +243,11 @@ public class ClienteERP {
 	    		case "LISTMATRICULA":
 	    			List<Matricula> lm = matRepo.list();
 	    			if(lm == null) {    	
-	    				respuestaServidor = "ERROR al inicializar las matriculas";
+	    				respuestaServidor = "ERROR al inicializar las matriculas\n";
 	    				return;
 	    			}
 	    			lm.forEach(m -> sb.append(">> " + m.getId() + " - " + m.getAlumno().getNombre() + 
-	    					" (" + m.getAlumno().getDni() + ")" + "\n\t"));
+	    					" " + m.getAlumno().getApellidos() + " (" + m.getAlumno().getDni() + ")" + "\n\t"));
 	    		break;
 	    		default:
 	    			respuestaServidor = "COMANDO NO RECONOCIDO\n";
@@ -259,14 +255,14 @@ public class ClienteERP {
 	    	
 	    	if(!sb.isEmpty()) respuestaServidor = "\n\t" + sb.toString();
 	    } catch (Exception ex) {
-	    	System.out.println("gestionarList (ClienteERP): " + ex.getMessage());
+	    	respuestaServidor = "gestionarList (ClienteERP): " + ex.getMessage() + "\n"; 
 	    }
 	}
 	
 	// ---------------------------------------------- GESTOR DEL COMANDO REMOVE
 	private void gestionarRemove(String comando, String[] partes) {
 		if (partes.length < 2) {
-			System.out.println("COMANDO INCOMPLETO");
+			System.out.println("COMANDO INCOMPLETO\n");
 			return;
 		}
 		
@@ -275,17 +271,17 @@ public class ClienteERP {
 				case "REMOVETIT": respuestaServidor = tituRepo.delete(partes[1]); break;
 				case "REMOVEASIG": respuestaServidor = asigRepo.delete(partes[1]); break;
 				case "REMOVEMATRICULA": respuestaServidor = matRepo.delete(partes[1]); break;
-				default: respuestaServidor = "COMANDO NO RECONOCIDO\n";
+				default: respuestaServidor = "COMANDO NO RECONOCIDO";
 			}
 		} catch (Exception ex) {
-			System.out.println("gestionarRemove (ClienteERP): " + ex.getMessage());
+			respuestaServidor = "gestionarRemove (ClienteERP): " + ex.getMessage(); 
 		}
 	}
 	
 	// ---------------------------------------------- GESTOR DEL COMANDO UPDATE
 	private void gestionarUpdate(String comando, String[] partes) {
 		if (partes.length < 2) {
-			System.out.println("COMANDO INCOMPLETO\n");
+			respuestaServidor = "COMANDO INCOMPLETO\n";
 			return;
 		}
 		
@@ -298,7 +294,7 @@ public class ClienteERP {
 				case "UPDATETIT":
 					Titulacion t = tituRepo.getModel(id);
 					if(t == null) {
-						respuestaServidor = "TITULACION NO ENCONTRADA -> " + id + "\n";
+						respuestaServidor = "TITULACION NO ENCONTRADA [" + id + "]\n";
 				        return;
 					}
 					
@@ -315,14 +311,14 @@ public class ClienteERP {
 					}
 					
 					t.setNombre(nombre);
-					respuestaServidor = tituRepo.update(id, t) + "\n";
+					respuestaServidor = tituRepo.update(id, t);
 				break;
 				
 				// ---------------------------------------------- ASIGNATURA
 				case "UPDATEASIG":
 					Asignatura a = asigRepo.getModel(id);
 					if(a == null) {
-						respuestaServidor = "ASIGNATURA NO ENCONTRADA -> " + id + "\n";
+						respuestaServidor = "ASIGNATURA NO ENCONTRADA [" + id + "]\n";
 				        return;
 					}
 					
@@ -339,6 +335,7 @@ public class ClienteERP {
 						respuestaServidor = "NOMBRE NO VÁLIDO\n";
 					    return;
 					}
+					
 					creditosStr = creditosStr.trim();
 					if(creditosStr.isEmpty()) {
 						respuestaServidor = "CRÉDITOS NO VÁLIDOS\n";
@@ -361,14 +358,14 @@ public class ClienteERP {
 					a.setNombre(nombre);
 					a.setCreditos(creditos);
 					
-					respuestaServidor = asigRepo.update(id, a) + "\n";
+					respuestaServidor = asigRepo.update(id, a);
 				break;
 				
 				// ---------------------------------------------- MATRICULA
 				case "UPDATEMATRICULA":
 					Matricula m = matRepo.getModel(id);
 					if(m == null) {
-						respuestaServidor = "MATRICULA NO ENCONTRADA -> " + id + "\n";
+						respuestaServidor = "MATRICULA NO ENCONTRADA [" + id + "]\n";
 				        return;
 					}
 					
@@ -403,14 +400,14 @@ public class ClienteERP {
 					m.getAlumno().setNombre(nombre);
 					m.getAlumno().setApellidos(apellidos);
 					
-					respuestaServidor = matRepo.update(id, m) + "\n";
+					respuestaServidor = matRepo.update(id, m);
 		        break;
 		        
 				default:
-					respuestaServidor = "COMANDO NO RECONOCIDO\n";
+					respuestaServidor = "COMANDO NO RECONOCIDO";
 		    }
 		} catch (Exception ex) {
-			System.out.println("gestionarUpdate: " + ex.getMessage());
+			respuestaServidor = "gestionarUpdate: " + ex.getMessage() + "\n"; 
 		}
 	}
 	
@@ -420,14 +417,13 @@ public class ClienteERP {
 			respuestaServidor = comunicacion.enviarComando(mensaje);
 			
 			if(respuestaServidor == null) {
-				System.out.println("Sin respuesta por parte del servidor.\n");
-				
+				respuestaServidor = "Sin respuesta por parte del servidor.\n";
 				return;
 			}
 			
 			ResponseParser parser = new ResponseParser(respuestaServidor);
 			if(parser.isOK()) {
-				respuestaServidor = "SESIONES ACTIVAS -> " + parser.getMessage() + "\n";
+				respuestaServidor = "SESIONES ACTIVAS -> " + parser.getMessage().trim() + "\n";
 			} else if(parser.isFAILED()){
 				respuestaServidor = "ERROR SESIONES -> " + parser.getMessage() + "\n";
 			} else {
@@ -435,7 +431,7 @@ public class ClienteERP {
 			}
 			
 		} catch (IOException e) {
-			System.out.println("imprimirSesiones (ClienteERP): " + e.getMessage());
+			respuestaServidor = "imprimirSesiones (ClienteERP): " + e.getMessage() + "\n";
 		}
 	}
 	
@@ -445,8 +441,8 @@ public class ClienteERP {
 			respuestaServidor = comunicacion.enviarComando(mensaje);
 			
 			if(respuestaServidor == null) {
-				System.out.println("Sin respuesta por parte del servidor.\n");
-				
+				System.out.println();
+				respuestaServidor = "Sin respuesta por parte del servidor.\n"; 
 				return;
 			}
 			
@@ -460,7 +456,7 @@ public class ClienteERP {
 				respuestaServidor = "RESPUESTA DESCONOCIDA" + "\n";
 			}
 		} catch(IOException ex) {
-			System.out.println("imprimirSesiones (ClienteERP): " + ex.getMessage());
+			respuestaServidor = "imprimirSesiones (ClienteERP): " + ex.getMessage() + "\n"; 
 		}
 	}
 	

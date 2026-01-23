@@ -93,7 +93,7 @@ public class MatRepository extends BaseRepository <Matricula>{
 		
 		
 		// ---------------- DATOS DEL ALUMNO ---------------- 
-		String datosAlumno = JOptionPane.showInputDialog(null, "[DNI] [nombre] [apellido1_apellido2]");
+		String datosAlumno = JOptionPane.showInputDialog(null, "[DNI] [nombre] [apellido1 apellido2]");
 		
 		if(datosAlumno == null) return null;
 		datosAlumno = datosAlumno.trim();
@@ -101,16 +101,20 @@ public class MatRepository extends BaseRepository <Matricula>{
 		
 		String [] partes = datosAlumno.split("\\s+");
 		
-		if(partes.length < 3 || partes.length > 4) {
-			System.out.println("FORMATO INVÁLIDO");
+		if(partes.length < 3 || partes.length > 5) {
 			JOptionPane.showMessageDialog(null, "FORMATO INVÁLIDO", "ERROR", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 		
 		try {
-			m.setAlumno(new Alumno(partes[0], partes[1], partes[2]));
+			if(partes[3] != null) {
+				m.setAlumno(new Alumno(partes[0], partes[1], partes[2] + " " + partes[3]));
+			} else {
+				m.setAlumno(new Alumno(partes[0], partes[1], partes[2]));
+			}
 		} catch(Exception ex) {
-			System.out.println("Error crearObjeto (MatRepository): " + ex.getMessage());
+			JOptionPane.showMessageDialog(null, "Error crearObjeto (MatRepository): " + ex.getMessage(),
+					"ERROR", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 		
@@ -120,12 +124,15 @@ public class MatRepository extends BaseRepository <Matricula>{
 		try {
 			asigs = asigRepo.list();
 		} catch (Exception ex) {
-			System.out.println("Error obteniendo asignaturas: " + ex.getMessage());
+			JOptionPane.showMessageDialog(null, "Error obteniendo asignaturas: " + ex.getMessage(),
+					"ERROR", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 		
 		if (asigs == null || asigs.isEmpty()) {
-			System.out.println("No hay asignaturas creadas. No se puede crear matrícula."); 
+			System.out.println(); 
+			JOptionPane.showMessageDialog(null, "No hay asignaturas creadas. No se puede crear matrícula.",
+					"ERROR", JOptionPane.ERROR_MESSAGE);
 			return null;
 		} 
 		
@@ -133,13 +140,14 @@ public class MatRepository extends BaseRepository <Matricula>{
 				a -> a.getId() + " - " + a.getNombre());
 		
 		if (seleccionadas == null || seleccionadas.isEmpty()) {
-			System.out.println("No hay asignaturas seleccionadas. No se puede crear matrícula."); 
+			JOptionPane.showMessageDialog(null, "No hay asignaturas seleccionadas. No se puede crear matrícula.",
+					"ERROR", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 		
 		Hashtable<String, Asignatura> tabla = new Hashtable<>();
 		for (Asignatura a : seleccionadas) tabla.put(a.getId(), a);
-		 
+		
 		m.setAsignaturas(tabla);
 		
 		return m;

@@ -56,31 +56,30 @@ public class CommunicationSocket implements ICommunicationServer{
 	// ---------------------------------------------- ENVIAR COMANDO AL SERVIDOR
 	@Override
 	public String enviarComando(String comando){
-		if(pw == null) return null;
+		if(pw == null) return "ERROR: PrintWriter!\n";
 		
-		if(comando == null || comando.trim().isEmpty()) return null;
+		if(comando == null || comando.trim().isEmpty()) return "ERROR: comando vacío\n";
 		pw.println(idComunicacion + " " + comando);
 		pw.flush();
 		
 		idComunicacion++;
 		
 		// ---------------------------------------------- RECIBIR LA RESPUESTA
-		String respuestaServidor = recibirRespuesta();
+		String respuestaServidor = recibirRespuesta() + "\n";
 		return respuestaServidor;
 	}
 	
 	// ---------------------------------------------- RECIBIR RESPUESTA DEL SRVIDOR
 	@Override
 	public String recibirRespuesta(){
-		if(br == null) return null;
+		if(br == null) return "ERROR: BufferedReader!\n";
 		
 		try {
 			return br.readLine();
 		} catch(IOException ex) {
-			System.out.println("recibirRespuesta (CommunicationSocket): " + ex.getMessage());
+			System.out.println();
+			return "recibirRespuesta (CommunicationSocket): " + ex.getMessage() + "\n";
 		}
-		
-		return null;
 	}
 	
 	

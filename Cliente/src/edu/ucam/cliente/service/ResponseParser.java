@@ -11,7 +11,7 @@ public class ResponseParser {
 	 * puerto = PUERTO 
 	 * */
 	public ResponseParser(String respuesta) {
-		String [] chuncks = respuesta.split(" ");
+		String [] chuncks = respuesta.split("\\s+");
 		
 		if(chuncks.length >= 4) {
 			this.type = chuncks[0];
@@ -22,9 +22,17 @@ public class ResponseParser {
 				this.ip = chuncks[3];
 				this.puerto = chuncks[4];
 				this.mensaje = null;
+				
+				ip = ip.trim();
+				puerto = puerto.trim();
 			} else {
 				this.mensaje = chuncks[3];
+				mensaje = mensaje.trim();
 			}
+			
+			type = type.trim();
+			numero = numero.trim();
+			codigo = codigo.trim();
 		}
 	}
 	

@@ -62,14 +62,20 @@ public class SubjectRepository extends BaseRepository <Asignatura>{
 		datosAsignatura = datosAsignatura.trim();
 		if(datosAsignatura.isEmpty()) return null;
 		
-		String [] partes = datosAsignatura.split(" ");
+		String [] partes = datosAsignatura.split("\\s+");
+		
+		if(partes.length != 2) {
+			JOptionPane.showMessageDialog(null, "FORMATO INVÁLIDO", "ERROR", JOptionPane.ERROR_MESSAGE);
+			return null;
+		}
 		try {
 			a.setNombre(partes[0]);
 			a.setCreditos(Integer.parseInt(partes[1]));
 			
 			return a;
 		} catch(Exception ex) {
-			System.out.println("Error crearObjeto (SubjectRepository): " + ex.getMessage());
+			JOptionPane.showMessageDialog(null, "Error crearObjeto (SubjectRepository): " + ex.getMessage(),
+					"ERROR", JOptionPane.ERROR_MESSAGE);
 		}
 		
 		return null;

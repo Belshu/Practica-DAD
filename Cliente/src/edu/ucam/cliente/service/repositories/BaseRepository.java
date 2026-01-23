@@ -168,7 +168,6 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 	@Override
 	public int modelSize() {
 		try {
-			
 			// ---------------------------------------------- RECIBIR RESPUESTA DEL SERVIDOR
 			String respuesta = comunicacion.enviarComando(countComando);
 			if(respuesta == null) {
@@ -176,16 +175,15 @@ public abstract class BaseRepository <T> implements IRepository<T> {
 				return -1;
 			}
 			
-			
 			// ---------------------------------------------- PARSEAR RESPUESTA PARA EXTRAER TAMAÑO
 			ResponseParser parser = new ResponseParser(respuesta);
 			if(parser.isOK()) {
 				String msg = parser.getMessage();
 				
-				
 				// ---------------------------------------------- PARSEAR A UN ENTERO
 				try {
-					return Integer.parseInt(msg);
+					int num = Integer.parseInt(msg);
+					return num;
 				} catch(NumberFormatException ex) {
 					System.out.println("ERROR: parseo de COUNT (" + countComando + "): " + msg);
 					return -1;

@@ -19,7 +19,6 @@ public class ChannelData implements IChannelData{
 			int p = Integer.parseInt(puerto);
 			socket = new Socket(ip, p);
 			
-			
 			// ---------------------------------------------- ENVIAR MEDIANTE EL OUTPUT
 			oos = new ObjectOutputStream(socket.getOutputStream());
 			oos.writeObject(modelo); 

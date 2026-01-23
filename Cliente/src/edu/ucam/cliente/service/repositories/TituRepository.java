@@ -52,7 +52,6 @@ public class TituRepository extends BaseRepository <Titulacion>{
 		t.setId(idObjeto);
 		t.setNombre(nombre);
 		
-		
 		// ---------------- ASIGNATURAS DISPONIBLES ---------------- 
 		List<Asignatura> asigs = null;
 		List<Matricula> mats = null;
@@ -60,24 +59,28 @@ public class TituRepository extends BaseRepository <Titulacion>{
 			asigs = asigRepo.list();
 			mats = matRepo.list();
 		} catch (Exception ex) {
-			System.out.println("Error obteniendo asignaturas: " + ex.getMessage());
+			JOptionPane.showMessageDialog(null, "Error crearObjeto (TituRepository): " + ex.getMessage(),
+					"ERROR", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 		
 		if (asigs == null || asigs.isEmpty()) {
-			System.out.println("No hay asignaturas creadas. No se puede crear titulación."); 
+			JOptionPane.showMessageDialog(null, "No hay asignaturas creadas. No se puede crear titulación.",
+					"ERROR", JOptionPane.ERROR_MESSAGE); 
 			return null;
 		} 
 		
 		if (mats == null || mats.isEmpty()) {
-			System.out.println("No hay matrículas creadas. No se puede crear titulación."); 
+			JOptionPane.showMessageDialog(null, "No hay matrículas creadas. No se puede crear titulación.",
+					"ERROR", JOptionPane.ERROR_MESSAGE);
 			return null;
 		} 
 		
 		List<Asignatura> asigSeleccionadas = UISelection.seleccionarVarios(null, "Seleccionar asignaturas", asigs, 
 				a -> a.getId() + " - " + a.getNombre());
 		if (asigSeleccionadas == null || asigSeleccionadas.isEmpty()) {
-			System.out.println("No hay asignaturas seleccionadas. No se puede crear titulación."); 
+			JOptionPane.showMessageDialog(null, "No hay asignaturas seleccionadas. No se puede crear titulación.",
+					"ERROR", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 		
@@ -85,6 +88,8 @@ public class TituRepository extends BaseRepository <Titulacion>{
 				m -> m.getId() + " - " + m.getAlumno().getNombre() + " " + m.getAlumno().getApellidos() + " (" + m.getAlumno().getDni() + ")");
 		if (matSeleccionadas == null || matSeleccionadas.isEmpty()) {
 			System.out.println("No hay matrículas seleccionadas. No se puede crear titulación."); 
+			JOptionPane.showMessageDialog(null, "No hay matrículas seleccionadas. No se puede crear titulación.",
+					"ERROR", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 		
