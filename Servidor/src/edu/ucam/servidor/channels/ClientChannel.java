@@ -57,9 +57,6 @@ public class ClientChannel extends Thread{
 	@Override
 	public void run() {
 		try {
-			pw.println("OK 0 200 Bienvenido!"); // mensaje de bienvenida
-			pw.flush();
-			
 			
 			//  ----------------------------------------------------------- AUTENTICAR NOMBRE DE USUARIO
 			String mensaje = null;

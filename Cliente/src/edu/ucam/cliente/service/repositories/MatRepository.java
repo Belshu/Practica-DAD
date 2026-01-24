@@ -107,7 +107,7 @@ public class MatRepository extends BaseRepository <Matricula>{
 		}
 		
 		try {
-			if(partes[3] != null) {
+			if(partes.length == 4) {
 				m.setAlumno(new Alumno(partes[0], partes[1], partes[2] + " " + partes[3]));
 			} else {
 				m.setAlumno(new Alumno(partes[0], partes[1], partes[2]));

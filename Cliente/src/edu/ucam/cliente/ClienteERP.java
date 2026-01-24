@@ -107,16 +107,31 @@ public class ClienteERP {
 			switch(comando) {
 				case "ADDTIT":
 					Titulacion t = tituRepo.crearObjeto(idObjeto);
+					if(t == null) {
+						respuestaServidor = "OBJETO_NO_CREADO"; 
+						return;
+					}
+					
 					respuestaServidor = tituRepo.add(idObjeto, t);
 				break;
 				
 				case "ADDASIG": 
 					Asignatura a = asigRepo.crearObjeto(idObjeto); 
+					if(a == null) {
+						respuestaServidor = "OBJETO_NO_CREADO"; 
+						return;
+					}
+					
 					respuestaServidor = asigRepo.add(idObjeto, a);
 				break;
 				
 				case "ADDMATRICULA":
 					Matricula m = matRepo.crearObjeto(idObjeto);
+					if(m == null) {
+						respuestaServidor = "OBJETO_NO_CREADO"; 
+						return;
+					}
+					
 					respuestaServidor = matRepo.add(idObjeto, m);
 				break;	
 				default:

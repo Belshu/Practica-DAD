@@ -23,13 +23,6 @@ public class CommunicationSocket implements ICommunicationServer{
 			socket = new Socket(ClientConfig.ip, ClientConfig.puerto);
 			br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
-			
-			
-			// ---------------------------------------------- MENSAJE DE BIENVENIDA
-			String respuesta = recibirRespuesta();
-			ResponseParser parser = new ResponseParser(respuesta);
-			if(parser.isOK()) System.out.println(parser.getMessage());
-			else System.out.println("RESPUESTA: " + parser.getMessage());
 		} catch(IOException ex) {
 			System.out.println("conectar (CommunicationSocket): " + ex.getMessage());
 		}
